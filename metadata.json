@@ -1,0 +1,5 @@
+{
+  "name": "StaticMD - Markdown to Mobile HTML Compiler",
+  "description": "A high-performance Markdown compiler that generates standalone, mobile-optimized HTML pages with Mermaid diagram support and multiple themes.",
+  "requestFramePermissions": []
+}
