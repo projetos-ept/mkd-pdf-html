@@ -16,6 +16,7 @@ export interface Template {
   name: string;
   header: string;
   footer: string;
+  body?: string;
 }
 
 export interface ThemeConfig {

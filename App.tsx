@@ -8,35 +8,21 @@ import { ThemeId, FontId } from './types.ts';
 import { compileToHtml } from './services/compiler.ts';
 import { Download, Layers, Trash2, Printer } from 'lucide-react';
 
-const INITIAL_HEADER = `### Projeto de Inovação Digital
-**Instituição:** Tech Labs | **Setor:** Pesquisa`;
+const INITIAL_HEADER = `### CETEP/LNAB
+**Professor:** Lucas Batista | **Turma:** 3TACM1 | **Bioquímica**`;
 
 const INITIAL_FOOTER = `---
-*Gerado via StaticMD Compiler - 2024*
-Página 1`;
+Criado por LEDUK`;
 
-const INITIAL_MD = `# Documentação de Arquitetura 🏗️
+const INITIAL_MD = `# Bioquímica Metabólica
 
-Este documento descreve o fluxo de dados da nossa nova plataforma estática.
-
-## Visão Geral
-A plataforma converte arquivos **Markdown** em páginas **HTML5** leves e independentes.
-
-### Fluxo de Compilação
-Abaixo o diagrama de como os dados são processados:
+Selecione o modelo "Bioquímica" no menu lateral para carregar o conteúdo completo.
 
 \`\`\`mermaid
-graph LR
-    A[Markdown Source] --> B{Processador}
-    B -->|Estilos| C[Preview]
-    B -->|Assets| D[HTML Estático]
-    D --> E[PDF Export]
+graph TD
+    A[Estudo] --> B[Prática]
+    B --> C[Resultado]
 \`\`\`
-
----
-## Referências
-- Documentação Mermaid
-- Markdown Guide
 `;
 
 const App: React.FC = () => {
@@ -56,7 +42,7 @@ const App: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `documento-${theme}.html`;
+      a.download = `documento-estatico.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -181,6 +167,7 @@ const App: React.FC = () => {
             setHeaderMarkdown={setHeaderMarkdown}
             footerMarkdown={footerMarkdown}
             setFooterMarkdown={setFooterMarkdown}
+            setMarkdown={setMarkdown}
             onClearHeader={() => setHeaderMarkdown("")}
             onClearFooter={() => setFooterMarkdown("")}
           />

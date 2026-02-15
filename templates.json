@@ -1,27 +1,24 @@
 
 [
   {
-    "id": "blank",
-    "name": "Nenhum (Blank)",
-    "header": "",
-    "footer": ""
+    "id": "bioq",
+    "name": "Bioquímica (Lucas Batista)",
+    "header": "### CETEP/LNAB\n**Professor:** Lucas Batista | **Turma:** 3TACM1\n**Disciplina:** Bioquímica\n---",
+    "footer": "---\nCriado por LEDUK",
+    "body": "# Bioquímica Metabólica: Principais Exames\n\nA bioquímica metabólica estuda as reações químicas que mantêm a homeostase do organismo. Os exames laboratoriais funcionam como “fotografias” desses processos.\n\n### 1. O Painel Energético\nEstes exames monitoram como o corpo gerencia o combustível (glicose) e o transporte de gorduras.\n\n- **Glicemia de Jejum**: Estado imediato da glicose.\n- **Hemoglobina Glicada (HbA1c)**: Média dos últimos 3 meses.\n\n### Fluxo de Metabolismo\n```mermaid\ngraph LR\n A[Ingestão de Carboidratos] --> B{Insulina}\n B --> C[Glicose no Sangue]\n C --> D[Energia Celular]\n C --> E[Estoque: Glicogênio/Gordura]\n \n F[Ingestão de Gorduras] --> G[Quilomícrons]\n G --> H[Colesterol LDL/HDL]\n H --> I[Placas nas Artérias]\n```\n\n### Referências\n- *Lehninger: Princípios de Bioquímica*\n- *Guyton & Hall: Fisiologia Médica*"
   },
   {
     "id": "corp",
     "name": "Relatório Corporativo",
     "header": "# Relatório de Desempenho\n**Empresa Global S.A.** | *Confidencial*",
-    "footer": "---\n© 2024 Empresa Global S.A. - Todos os direitos reservados."
+    "footer": "---\n© 2024 Empresa Global S.A. - Todos os direitos reservados.",
+    "body": "## Executivo\nOs resultados deste trimestre superaram as metas em 12%."
   },
   {
-    "id": "academic",
-    "name": "Documento Acadêmico",
-    "header": "### Universidade de Tecnologia\n**Departamento de Pesquisa e Desenvolvimento**\n---",
-    "footer": "--- \n**Nota:** Este documento segue as normas internas de publicação científica."
-  },
-  {
-    "id": "newsletter",
-    "name": "Newsletter / Blog",
-    "header": "> **Informativo Semanal StaticMD**\n> As últimas novidades em tecnologia estática.",
-    "footer": "---\n[Clique aqui para cancelar inscrição](https://example.com) | [Ver no Navegador](https://example.com)"
+    "id": "blank",
+    "name": "Nenhum (Em Branco)",
+    "header": "",
+    "footer": "",
+    "body": ""
   }
 ]

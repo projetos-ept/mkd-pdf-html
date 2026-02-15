@@ -12,6 +12,7 @@ interface DocumentSettingsProps {
   setHeaderMarkdown: (md: string) => void;
   footerMarkdown: string;
   setFooterMarkdown: (md: string) => void;
+  setMarkdown: (md: string) => void;
   onClearHeader: () => void;
   onClearFooter: () => void;
 }
@@ -25,11 +26,12 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
   setHeaderMarkdown,
   footerMarkdown,
   setFooterMarkdown,
+  setMarkdown,
   onClearHeader,
   onClearFooter,
 }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState('blank');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('bioq');
 
   useEffect(() => {
     fetch('./templates.json')
@@ -44,6 +46,9 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
     if (template) {
       setHeaderMarkdown(template.header);
       setFooterMarkdown(template.footer);
+      if (template.body !== undefined) {
+        setMarkdown(template.body);
+      }
     }
   };
 
