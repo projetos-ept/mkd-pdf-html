@@ -11,6 +11,13 @@ export enum FontId {
   MONO = 'JetBrains Mono, monospace'
 }
 
+export interface Template {
+  id: string;
+  name: string;
+  header: string;
+  footer: string;
+}
+
 export interface ThemeConfig {
   id: ThemeId;
   name: string;

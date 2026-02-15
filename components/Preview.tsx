@@ -8,6 +8,7 @@ import { Eye } from 'lucide-react';
 interface PreviewProps {
   markdown: string;
   headerMarkdown: string;
+  footerMarkdown: string;
   themeId: ThemeId;
   fontFamily: FontId;
   fontSize: number;
@@ -19,7 +20,7 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
-const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, themeId, fontFamily, fontSize }) => {
+const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkdown, themeId, fontFamily, fontSize }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const theme = THEMES[themeId];
 
@@ -46,12 +47,13 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, themeId, fo
       mermaid.contentLoaded();
     };
 
-    const timer = setTimeout(processMermaid, 100);
+    const timer = setTimeout(processMermaid, 150);
     return () => clearTimeout(timer);
-  }, [markdown, headerMarkdown]);
+  }, [markdown, headerMarkdown, footerMarkdown]);
 
   const renderedHeaderHtml = md.render(headerMarkdown || '');
   const renderedContentHtml = md.render(markdown);
+  const renderedFooterHtml = md.render(footerMarkdown || '');
 
   return (
     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden print:shadow-none print:border-none">
@@ -73,13 +75,19 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, themeId, fo
         >
           <div 
             ref={containerRef}
-            className={`prose prose-slate max-w-none p-6 md:p-12 prose-headings:font-bold ${themeId === ThemeId.CYBER ? 'prose-invert' : ''}`}
+            className={`prose prose-slate max-w-none p-6 md:p-12 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''}`}
           >
             {headerMarkdown && (
               <header className="mb-8 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
-            <div dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
+            
+            <article dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
+
+            {footerMarkdown && (
+              <footer className="mt-12 pt-4 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
+                      dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
+            )}
           </div>
         </div>
       </div>

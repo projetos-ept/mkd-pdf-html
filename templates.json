@@ -1,0 +1,27 @@
+
+[
+  {
+    "id": "blank",
+    "name": "Nenhum (Blank)",
+    "header": "",
+    "footer": ""
+  },
+  {
+    "id": "corp",
+    "name": "Relatório Corporativo",
+    "header": "# Relatório de Desempenho\n**Empresa Global S.A.** | *Confidencial*",
+    "footer": "---\n© 2024 Empresa Global S.A. - Todos os direitos reservados."
+  },
+  {
+    "id": "academic",
+    "name": "Documento Acadêmico",
+    "header": "### Universidade de Tecnologia\n**Departamento de Pesquisa e Desenvolvimento**\n---",
+    "footer": "--- \n**Nota:** Este documento segue as normas internas de publicação científica."
+  },
+  {
+    "id": "newsletter",
+    "name": "Newsletter / Blog",
+    "header": "> **Informativo Semanal StaticMD**\n> As últimas novidades em tecnologia estática.",
+    "footer": "---\n[Clique aqui para cancelar inscrição](https://example.com) | [Ver no Navegador](https://example.com)"
+  }
+]
