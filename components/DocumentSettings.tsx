@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom } from 'lucide-react';
+import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser } from 'lucide-react';
 import { FontId, Template } from '../types.ts';
 
 interface DocumentSettingsProps {
@@ -12,6 +12,8 @@ interface DocumentSettingsProps {
   setHeaderMarkdown: (md: string) => void;
   footerMarkdown: string;
   setFooterMarkdown: (md: string) => void;
+  onClearHeader: () => void;
+  onClearFooter: () => void;
 }
 
 const DocumentSettings: React.FC<DocumentSettingsProps> = ({
@@ -23,12 +25,13 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
   setHeaderMarkdown,
   footerMarkdown,
   setFooterMarkdown,
+  onClearHeader,
+  onClearFooter,
 }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('blank');
 
   useEffect(() => {
-    // Using relative path for the fetch
     fetch('./templates.json')
       .then(res => res.json())
       .then(data => setTemplates(data))
@@ -48,7 +51,7 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
     <div className="flex flex-col gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="flex items-center gap-2 mb-1 text-sm font-semibold text-gray-500 uppercase tracking-wider">
         <Settings className="w-4 h-4" />
-        Personalização
+        Configurações
       </div>
 
       <div className="space-y-4">
@@ -61,11 +64,11 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
             <select 
               value={fontFamily}
               onChange={(e) => setFontFamily(e.target.value as FontId)}
-              className="w-full p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none"
+              className="w-full p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
-              <option value={FontId.SANS}>Sans</option>
-              <option value={FontId.SERIF}>Serif</option>
-              <option value={FontId.MONO}>Mono</option>
+              <option value={FontId.SANS}>Sans (Modern)</option>
+              <option value={FontId.SERIF}>Serif (Reader)</option>
+              <option value={FontId.MONO}>Mono (Code)</option>
             </select>
           </div>
           <div className="space-y-1">
@@ -76,7 +79,7 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
               type="number" 
               value={fontSize}
               onChange={(e) => setFontSize(parseInt(e.target.value) || 16)}
-              className="w-full p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none"
+              className="w-full p-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
         </div>
@@ -84,7 +87,7 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
         {/* Template Selector */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase">
-            <LayoutPanelTop className="w-3 h-3" /> Modelos Predefinidos
+            <LayoutPanelTop className="w-3 h-3" /> Modelos
           </label>
           <select 
             value={selectedTemplateId}
@@ -100,31 +103,43 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
         <div className="h-[1px] bg-gray-100 my-2"></div>
 
         <div className="space-y-3">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
-            Customização Manual
-          </label>
-          
-          <div className="space-y-1">
+          <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
-              <PanelTop className="w-3 h-3" /> Header (MD)
+              <PanelTop className="w-3 h-3" /> Cabeçalho (Header)
             </label>
-            <textarea
-              value={headerMarkdown}
-              onChange={(e) => setHeaderMarkdown(e.target.value)}
-              className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400"
-            />
+            <button 
+              onClick={onClearHeader}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              title="Limpar cabeçalho"
+            >
+              <Eraser className="w-3 h-3" />
+            </button>
           </div>
+          <textarea
+            value={headerMarkdown}
+            onChange={(e) => setHeaderMarkdown(e.target.value)}
+            placeholder="Markdown para o cabeçalho..."
+            className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
+          />
 
-          <div className="space-y-1">
+          <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
-              <PanelBottom className="w-3 h-3" /> Footer (MD)
+              <PanelBottom className="w-3 h-3" /> Rodapé (Footer)
             </label>
-            <textarea
-              value={footerMarkdown}
-              onChange={(e) => setFooterMarkdown(e.target.value)}
-              className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400"
-            />
+            <button 
+              onClick={onClearFooter}
+              className="text-gray-400 hover:text-red-500 transition-colors"
+              title="Limpar rodapé"
+            >
+              <Eraser className="w-3 h-3" />
+            </button>
           </div>
+          <textarea
+            value={footerMarkdown}
+            onChange={(e) => setFooterMarkdown(e.target.value)}
+            placeholder="Markdown para o rodapé..."
+            className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
+          />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import MarkdownIt from 'markdown-it';
 import mermaid from 'mermaid';
-import { ThemeId, THEMES, FontId } from '../types';
+import { ThemeId, THEMES, FontId } from '../types.ts';
 import { Eye } from 'lucide-react';
 
 interface PreviewProps {
@@ -26,66 +26,78 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkd
 
   useEffect(() => {
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: themeId === ThemeId.CYBER ? 'dark' : 'default',
       securityLevel: 'loose',
+      fontFamily: 'Inter, sans-serif'
     });
   }, [themeId]);
 
   useEffect(() => {
-    const processMermaid = () => {
-      const blocks = containerRef.current?.querySelectorAll('pre code.language-mermaid');
-      blocks?.forEach((block) => {
+    const renderMermaid = async () => {
+      if (!containerRef.current) return;
+      
+      const blocks = containerRef.current.querySelectorAll('pre code.language-mermaid');
+      // Fix: Cast the results of Array.from(blocks) to HTMLElement[] to resolve 'unknown' type errors
+      for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
         if (pre) {
-          const div = document.createElement('div');
-          div.className = 'mermaid';
-          div.textContent = block.textContent;
-          pre.replaceWith(div);
+          const content = block.textContent || '';
+          const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+          try {
+            const { svg } = await mermaid.render(id, content);
+            const div = document.createElement('div');
+            div.className = 'mermaid-rendered my-6 flex justify-center';
+            div.innerHTML = svg;
+            pre.replaceWith(div);
+          } catch (err) {
+            console.error("Mermaid error:", err);
+            // Fallback: mantém o código se der erro
+          }
         }
-      });
-      mermaid.contentLoaded();
+      }
     };
 
-    const timer = setTimeout(processMermaid, 150);
+    const timer = setTimeout(renderMermaid, 200);
     return () => clearTimeout(timer);
-  }, [markdown, headerMarkdown, footerMarkdown]);
+  }, [markdown]);
 
   const renderedHeaderHtml = md.render(headerMarkdown || '');
   const renderedContentHtml = md.render(markdown);
   const renderedFooterHtml = md.render(footerMarkdown || '');
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden print:shadow-none print:border-none">
+    <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden print:bg-white print:border-none print:shadow-none">
       <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100 font-semibold text-gray-700 print:hidden">
         <Eye className="w-4 h-4" />
-        Visualização em Tempo Real
+        Visualização (WYSIWYG)
       </div>
-      <div className="flex-1 overflow-auto bg-gray-100 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible">
+      <div className="flex-1 overflow-auto bg-gray-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible">
         <div 
           id="printable-document"
           style={{ 
             fontFamily: fontFamily,
-            fontSize: `${fontSize}px`
+            fontSize: `${fontSize}px`,
+            minHeight: '29.7cm' // Altura mínima A4
           }}
           className={`
-            ${theme.bgClass} ${theme.textClass} shadow-2xl rounded-lg
-            min-h-full transition-all duration-300 print:shadow-none print:rounded-none
+            ${theme.bgClass} ${theme.textClass} shadow-2xl mx-auto
+            max-w-[21cm] transition-all duration-300 print:shadow-none print:max-w-none print:w-full
           `}
         >
           <div 
             ref={containerRef}
-            className={`prose prose-slate max-w-none p-6 md:p-12 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''}`}
+            className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''}`}
           >
             {headerMarkdown && (
-              <header className="mb-8 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
+              <header className="mb-10 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
             
-            <article dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
+            <article className="markdown-content" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
 
             {footerMarkdown && (
-              <footer className="mt-12 pt-4 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
+              <footer className="mt-16 pt-6 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
                       dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
             )}
           </div>

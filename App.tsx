@@ -6,34 +6,43 @@ import ThemeSelector from './components/ThemeSelector.tsx';
 import DocumentSettings from './components/DocumentSettings.tsx';
 import { ThemeId, FontId } from './types.ts';
 import { compileToHtml } from './services/compiler.ts';
-import { Download, Rocket, Layers, FileText, Image as ImageIcon } from 'lucide-react';
+import { Download, Layers, Trash2, Printer } from 'lucide-react';
 
-const INITIAL_MD = `# Projeto StaticMD 🚀
+const INITIAL_HEADER = `### Projeto de Inovação Digital
+**Instituição:** Tech Labs | **Setor:** Pesquisa`;
 
-Este documento demonstra o poder da personalização total.
+const INITIAL_FOOTER = `---
+*Gerado via StaticMD Compiler - 2024*
+Página 1`;
 
-## Suporte a Imagens
-![Exemplo de Imagem](https://images.unsplash.com/photo-1618477388954-7852f32655ec?auto=format&fit=crop&q=80&w=1000)
+const INITIAL_MD = `# Documentação de Arquitetura 🏗️
 
-### Metas Atingidas
-Os resultados deste trimestre superaram as expectativas iniciais em **15%**.
+Este documento descreve o fluxo de dados da nossa nova plataforma estática.
+
+## Visão Geral
+A plataforma converte arquivos **Markdown** em páginas **HTML5** leves e independentes.
+
+### Fluxo de Compilação
+Abaixo o diagrama de como os dados são processados:
 
 \`\`\`mermaid
 graph LR
-    A[MD] --> B(Compilador)
-    B --> C{Formato}
-    C -->|PDF| D[Documento Físico]
-    C -->|HTML| E[Página Web]
+    A[Markdown Source] --> B{Processador}
+    B -->|Estilos| C[Preview]
+    B -->|Assets| D[HTML Estático]
+    D --> E[PDF Export]
 \`\`\`
 
 ---
-*Escrito em Markdown.*
+## Referências
+- Documentação Mermaid
+- Markdown Guide
 `;
 
 const App: React.FC = () => {
   const [markdown, setMarkdown] = useState(INITIAL_MD);
-  const [headerMarkdown, setHeaderMarkdown] = useState("");
-  const [footerMarkdown, setFooterMarkdown] = useState("");
+  const [headerMarkdown, setHeaderMarkdown] = useState(INITIAL_HEADER);
+  const [footerMarkdown, setFooterMarkdown] = useState(INITIAL_FOOTER);
   const [theme, setTheme] = useState<ThemeId>(ThemeId.MODERN);
   const [fontFamily, setFontFamily] = useState<FontId>(FontId.SANS);
   const [fontSize, setFontSize] = useState<number>(16);
@@ -47,7 +56,7 @@ const App: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `static-doc-${theme}.html`;
+      a.download = `documento-${theme}.html`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -63,66 +72,105 @@ const App: React.FC = () => {
     window.print();
   };
 
+  const clearAll = () => {
+    if (confirm("Deseja realmente apagar todo o documento?")) {
+      setMarkdown("");
+      setHeaderMarkdown("");
+      setFooterMarkdown("");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       <style>{`
         @media print {
-          body * { visibility: hidden !important; }
-          #root, #root * { visibility: hidden !important; }
-          #printable-document, #printable-document * { 
-            visibility: visible !important; 
+          @page {
+            margin: 1cm;
+            size: auto;
           }
-          #printable-document {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+          body { 
+            background: white !important; 
+            margin: 0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .app-header, aside, .editor-container, .no-print, button { 
+            display: none !important; 
+          }
+          #root, main {
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .preview-container {
+            display: block !important;
             width: 100% !important;
+            height: auto !important;
             margin: 0 !important;
             padding: 0 !important;
+            overflow: visible !important;
             background: white !important;
-            color: black !important;
-            box-shadow: none !important;
           }
-          header, aside, .no-print { display: none !important; }
-          img { max-width: 100% !important; page-break-inside: avoid; }
+          #printable-document {
+            box-shadow: none !important;
+            border: none !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: auto !important;
+          }
+          .prose {
+            max-width: none !important;
+            width: 100% !important;
+          }
+          img {
+            max-width: 100% !important;
+            page-break-inside: avoid;
+          }
         }
       `}</style>
 
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm print:hidden">
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <Layers className="text-white w-6 h-6" />
+      <header className="app-header bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm print:hidden">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-600 p-2 rounded-lg shadow-inner">
+            <Layers className="text-white w-5 h-5" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight hidden sm:block">
+          <h1 className="text-lg font-extrabold tracking-tight">
             Static<span className="text-blue-600">MD</span>
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={clearAll}
+            className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold uppercase tracking-tighter"
+          >
+            <Trash2 className="w-4 h-4" />
+            Limpar
+          </button>
+          <div className="h-6 w-[1px] bg-slate-200"></div>
           <button 
             onClick={handleExportPdf}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg font-bold hover:bg-slate-900 transition-all text-sm shadow-md"
           >
-            <FileText className="w-4 h-4 text-red-500" />
+            <Printer className="w-4 h-4" />
             Exportar PDF
           </button>
           <button 
             onClick={handleDownloadHtml}
             disabled={isCompiling}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-all text-sm disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 transition-all text-sm disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            {isCompiling ? 'Gerando...' : 'Download HTML'}
+            {isCompiling ? 'Gerando...' : 'HTML Estático'}
           </button>
         </div>
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-73px)] overflow-hidden print:h-auto print:block">
-        <aside className="w-full md:w-80 p-4 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col gap-4 overflow-y-auto print:hidden bg-gray-50/50">
-          <ThemeSelector 
-            currentTheme={theme} 
-            onThemeChange={setTheme} 
-          />
+        <aside className="w-full md:w-80 p-4 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col gap-4 overflow-y-auto print:hidden bg-slate-50">
+          <ThemeSelector currentTheme={theme} onThemeChange={setTheme} />
           
           <DocumentSettings 
             fontFamily={fontFamily}
@@ -133,27 +181,20 @@ const App: React.FC = () => {
             setHeaderMarkdown={setHeaderMarkdown}
             footerMarkdown={footerMarkdown}
             setFooterMarkdown={setFooterMarkdown}
+            onClearHeader={() => setHeaderMarkdown("")}
+            onClearFooter={() => setFooterMarkdown("")}
           />
-          
-          <div className="bg-green-50 p-4 rounded-xl border border-green-100 flex gap-3">
-            <ImageIcon className="w-6 h-6 text-green-600 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-green-900">Renderização Ativa</p>
-              <p className="text-[11px] text-green-700 leading-relaxed">
-                Suporte nativo para imagens, links e diagramas Mermaid em tempo real.
-              </p>
-            </div>
-          </div>
         </aside>
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 overflow-hidden print:block print:p-0">
-          <div className="h-[40vh] lg:h-full print:hidden">
+          <div className="editor-container h-[40vh] lg:h-full print:hidden">
             <Editor 
               value={markdown} 
-              onChange={setMarkdown} 
+              onChange={setMarkdown}
+              onClear={() => setMarkdown("")}
             />
           </div>
-          <div className="h-[60vh] lg:h-full print:h-auto print:block">
+          <div className="preview-container h-[60vh] lg:h-full print:h-auto print:block">
             <Preview 
               markdown={markdown} 
               headerMarkdown={headerMarkdown}
