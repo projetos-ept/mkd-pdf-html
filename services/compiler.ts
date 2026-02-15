@@ -29,7 +29,7 @@ export const compileToHtml = (
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StaticMD Document</title>
+    <title>Documento Estático - LEDUK</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,61 +50,49 @@ export const compileToHtml = (
         .markdown-body h1 { font-size: 2.25em; font-weight: 700; margin-bottom: 0.5em; border-bottom: 2px solid; padding-bottom: 0.2em; }
         .markdown-body h2 { font-size: 1.875em; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
         .markdown-body h3 { font-size: 1.5em; font-weight: 600; margin-top: 1.2em; margin-bottom: 0.4em; }
-        .markdown-body p { margin-bottom: 1em; }
+        .markdown-body p { margin-bottom: 1em; text-align: justify; }
         .markdown-body blockquote { border-left: 4px solid #cbd5e1; padding-left: 1rem; font-style: italic; margin: 1.5rem 0; color: #64748b; }
         .markdown-body code { background: rgba(0,0,0,0.05); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; }
         .markdown-body pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
-        .markdown-body pre code { background: transparent; color: inherit; padding: 0; }
-        .markdown-body img { max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 1.5rem 0; display: block; }
         .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        .markdown-body th { background: rgba(0,0,0,0.02); }
         .markdown-body th, .markdown-body td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; }
         
-        header.doc-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; opacity: 0.8; }
-        footer.doc-footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; opacity: 0.8; font-size: 0.85em; }
+        header.doc-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+        footer.doc-footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.85em; }
 
-        .theme-cyber .markdown-body code { background: #1e293b; color: #22d3ee; }
-        .mermaid { margin: 2rem 0; display: flex; justify-content: center; }
-        
         @media print {
-            body { background: white !important; color: black !important; }
-            .markdown-body img { break-inside: avoid; }
-            .theme-cyber .markdown-body code { color: #0891b2; border: 1px solid #e2e8f0; }
-            
+            body { background: white !important; }
             ${headerPos === 'sticky' ? `
-            header.doc-header {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: auto;
-                background: white;
-                z-index: 1000;
-                margin-bottom: 0;
-                padding: 1cm;
-                border-bottom: 1px solid #e2e8f0;
-            }
-            body { padding-top: 3cm; }
+              @page { margin-top: 3cm; }
+              header.doc-header {
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  background: white;
+                  padding: 1cm 0;
+                  margin-bottom: 0;
+                  border-bottom: 1px solid #ddd;
+              }
             ` : ''}
-
             ${footerPos === 'sticky' ? `
-            footer.doc-footer {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: auto;
-                background: white;
-                z-index: 1000;
-                margin-top: 0;
-                padding: 1cm;
-                border-top: 1px solid #e2e8f0;
-            }
-            body { padding-bottom: 2cm; }
+              @page { margin-bottom: 2cm; }
+              footer.doc-footer {
+                  position: fixed;
+                  bottom: 0;
+                  left: 0;
+                  right: 0;
+                  background: white;
+                  padding: 0.5cm 0;
+                  margin-top: 0;
+                  border-top: 1px solid #ddd;
+              }
             ` : ''}
         }
     </style>
 </head>
-<body class="${theme.bgClass} ${theme.textClass} theme-${theme.id} min-h-screen">
+<body class="${theme.bgClass} ${theme.textClass} min-h-screen">
     <div class="${theme.containerClass} markdown-body">
         ${renderedHeader ? `<header class="doc-header">${renderedHeader}</header>` : ''}
         <article>
@@ -120,6 +108,7 @@ export const compileToHtml = (
             theme: '${themeId === ThemeId.CYBER ? 'dark' : 'default'}',
             securityLevel: 'loose'
         });
+        // Forçar renderização de blocos mermaid
         document.querySelectorAll('pre code.language-mermaid').forEach((block) => {
             const pre = block.parentElement;
             const div = document.createElement('div');
