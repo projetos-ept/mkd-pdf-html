@@ -4,9 +4,9 @@ import Editor from './components/Editor.tsx';
 import Preview from './components/Preview.tsx';
 import ThemeSelector from './components/ThemeSelector.tsx';
 import DocumentSettings from './components/DocumentSettings.tsx';
-import { ThemeId, FontId } from './types.ts';
+import { ThemeId, FontId, ElementPosition } from './types.ts';
 import { compileToHtml } from './services/compiler.ts';
-import { Download, Layers, Trash2, Printer } from 'lucide-react';
+import { Download, Layers, Trash2, Printer, Upload } from 'lucide-react';
 
 const INITIAL_HEADER = `### CETEP/LNAB
 **Professor:** Lucas Batista | **Turma:** 3TACM1 | **Bioquímica**`;
@@ -29,6 +29,8 @@ const App: React.FC = () => {
   const [markdown, setMarkdown] = useState(INITIAL_MD);
   const [headerMarkdown, setHeaderMarkdown] = useState(INITIAL_HEADER);
   const [footerMarkdown, setFooterMarkdown] = useState(INITIAL_FOOTER);
+  const [headerPos, setHeaderPos] = useState<ElementPosition>('flow');
+  const [footerPos, setFooterPos] = useState<ElementPosition>('flow');
   const [theme, setTheme] = useState<ThemeId>(ThemeId.MODERN);
   const [fontFamily, setFontFamily] = useState<FontId>(FontId.SANS);
   const [fontSize, setFontSize] = useState<number>(16);
@@ -37,7 +39,7 @@ const App: React.FC = () => {
   const handleDownloadHtml = () => {
     setIsCompiling(true);
     try {
-      const fullHtml = compileToHtml(markdown, theme, headerMarkdown, footerMarkdown, fontFamily, fontSize);
+      const fullHtml = compileToHtml(markdown, theme, headerMarkdown, footerMarkdown, fontFamily, fontSize, headerPos, footerPos);
       const blob = new Blob([fullHtml], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -56,6 +58,17 @@ const App: React.FC = () => {
 
   const handleExportPdf = () => {
     window.print();
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setMarkdown(content);
+    };
+    reader.readAsText(file);
   };
 
   const clearAll = () => {
@@ -114,6 +127,23 @@ const App: React.FC = () => {
             max-width: 100% !important;
             page-break-inside: avoid;
           }
+          /* Sticky Print Handling */
+          .sticky-header-print {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 1000;
+          }
+          .sticky-footer-print {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 1000;
+          }
         }
       `}</style>
 
@@ -128,6 +158,11 @@ const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <label className="cursor-pointer flex items-center gap-2 px-3 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all text-xs font-bold uppercase tracking-tighter">
+            <Upload className="w-4 h-4" />
+            Upload .md
+            <input type="file" accept=".md,.txt" onChange={handleFileUpload} className="hidden" />
+          </label>
           <button 
             onClick={clearAll}
             className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold uppercase tracking-tighter"
@@ -168,6 +203,10 @@ const App: React.FC = () => {
             footerMarkdown={footerMarkdown}
             setFooterMarkdown={setFooterMarkdown}
             setMarkdown={setMarkdown}
+            headerPos={headerPos}
+            setHeaderPos={setHeaderPos}
+            footerPos={footerPos}
+            setFooterPos={setFooterPos}
             onClearHeader={() => setHeaderMarkdown("")}
             onClearFooter={() => setFooterMarkdown("")}
           />
@@ -189,6 +228,8 @@ const App: React.FC = () => {
               themeId={theme} 
               fontFamily={fontFamily}
               fontSize={fontSize}
+              headerPos={headerPos}
+              footerPos={footerPos}
             />
           </div>
         </div>

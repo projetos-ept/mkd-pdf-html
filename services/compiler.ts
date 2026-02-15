@@ -1,6 +1,6 @@
 
 import MarkdownIt from 'markdown-it';
-import { ThemeId, THEMES } from '../types.ts';
+import { ThemeId, THEMES, ElementPosition } from '../types.ts';
 
 const md = new MarkdownIt({
   html: true,
@@ -14,7 +14,9 @@ export const compileToHtml = (
   headerMd: string = '', 
   footerMd: string = '',
   fontFamily: string = 'Inter, sans-serif',
-  fontSize: number = 16
+  fontSize: number = 16,
+  headerPos: ElementPosition = 'flow',
+  footerPos: ElementPosition = 'flow'
 ): string => {
   const theme = THEMES[themeId];
   const renderedHeader = headerMd ? md.render(headerMd) : '';
@@ -67,6 +69,38 @@ export const compileToHtml = (
             body { background: white !important; color: black !important; }
             .markdown-body img { break-inside: avoid; }
             .theme-cyber .markdown-body code { color: #0891b2; border: 1px solid #e2e8f0; }
+            
+            ${headerPos === 'sticky' ? `
+            header.doc-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                background: white;
+                z-index: 1000;
+                margin-bottom: 0;
+                padding: 1cm;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            body { padding-top: 3cm; }
+            ` : ''}
+
+            ${footerPos === 'sticky' ? `
+            footer.doc-footer {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                background: white;
+                z-index: 1000;
+                margin-top: 0;
+                padding: 1cm;
+                border-top: 1px solid #e2e8f0;
+            }
+            body { padding-bottom: 2cm; }
+            ` : ''}
         }
     </style>
 </head>

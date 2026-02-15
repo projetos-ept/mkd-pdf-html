@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import MarkdownIt from 'markdown-it';
 import mermaid from 'mermaid';
-import { ThemeId, THEMES, FontId } from '../types.ts';
+import { ThemeId, THEMES, FontId, ElementPosition } from '../types.ts';
 import { Eye } from 'lucide-react';
 
 interface PreviewProps {
@@ -12,6 +12,8 @@ interface PreviewProps {
   themeId: ThemeId;
   fontFamily: FontId;
   fontSize: number;
+  headerPos: ElementPosition;
+  footerPos: ElementPosition;
 }
 
 const md = new MarkdownIt({
@@ -20,7 +22,16 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
-const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkdown, themeId, fontFamily, fontSize }) => {
+const Preview: React.FC<PreviewProps> = ({ 
+  markdown, 
+  headerMarkdown, 
+  footerMarkdown, 
+  themeId, 
+  fontFamily, 
+  fontSize,
+  headerPos,
+  footerPos
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const theme = THEMES[themeId];
 
@@ -38,7 +49,6 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkd
       if (!containerRef.current) return;
       
       const blocks = containerRef.current.querySelectorAll('pre code.language-mermaid');
-      // Fix: Cast the results of Array.from(blocks) to HTMLElement[] to resolve 'unknown' type errors
       for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
         if (pre) {
@@ -52,7 +62,6 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkd
             pre.replaceWith(div);
           } catch (err) {
             console.error("Mermaid error:", err);
-            // Fallback: mantém o código se der erro
           }
         }
       }
@@ -72,35 +81,45 @@ const Preview: React.FC<PreviewProps> = ({ markdown, headerMarkdown, footerMarkd
         <Eye className="w-4 h-4" />
         Visualização (WYSIWYG)
       </div>
-      <div className="flex-1 overflow-auto bg-gray-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible">
+      <div className="flex-1 overflow-auto bg-gray-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible relative">
         <div 
           id="printable-document"
           style={{ 
             fontFamily: fontFamily,
             fontSize: `${fontSize}px`,
-            minHeight: '29.7cm' // Altura mínima A4
+            minHeight: '29.7cm' 
           }}
           className={`
-            ${theme.bgClass} ${theme.textClass} shadow-2xl mx-auto
+            ${theme.bgClass} ${theme.textClass} shadow-2xl mx-auto relative
             max-w-[21cm] transition-all duration-300 print:shadow-none print:max-w-none print:w-full
           `}
         >
+          {headerMarkdown && headerPos === 'sticky' && (
+            <header className="sticky top-0 z-30 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-90 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
+                    dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
+          )}
+
           <div 
             ref={containerRef}
             className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''}`}
           >
-            {headerMarkdown && (
+            {headerMarkdown && headerPos === 'flow' && (
               <header className="mb-10 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
             
             <article className="markdown-content" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
 
-            {footerMarkdown && (
+            {footerMarkdown && footerPos === 'flow' && (
               <footer className="mt-16 pt-6 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
                       dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
             )}
           </div>
+
+          {footerMarkdown && footerPos === 'sticky' && (
+            <footer className="sticky bottom-0 z-30 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-90 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
+                    dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
+          )}
         </div>
       </div>
     </div>

@@ -11,6 +11,8 @@ export enum FontId {
   MONO = 'JetBrains Mono, monospace'
 }
 
+export type ElementPosition = 'flow' | 'sticky';
+
 export interface Template {
   id: string;
   name: string;

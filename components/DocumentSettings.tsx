@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser } from 'lucide-react';
-import { FontId, Template } from '../types.ts';
+import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser, Anchor, Move } from 'lucide-react';
+import { FontId, Template, ElementPosition } from '../types.ts';
 
 interface DocumentSettingsProps {
   fontFamily: FontId;
@@ -13,6 +13,10 @@ interface DocumentSettingsProps {
   footerMarkdown: string;
   setFooterMarkdown: (md: string) => void;
   setMarkdown: (md: string) => void;
+  headerPos: ElementPosition;
+  setHeaderPos: (pos: ElementPosition) => void;
+  footerPos: ElementPosition;
+  setFooterPos: (pos: ElementPosition) => void;
   onClearHeader: () => void;
   onClearFooter: () => void;
 }
@@ -27,6 +31,10 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
   footerMarkdown,
   setFooterMarkdown,
   setMarkdown,
+  headerPos,
+  setHeaderPos,
+  footerPos,
+  setFooterPos,
   onClearHeader,
   onClearFooter,
 }) => {
@@ -51,6 +59,25 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
       }
     }
   };
+
+  const PositionToggle = ({ value, onChange }: { value: ElementPosition, onChange: (v: ElementPosition) => void }) => (
+    <div className="flex bg-slate-100 p-0.5 rounded-md self-end mb-1">
+      <button 
+        onClick={() => onChange('flow')}
+        className={`px-2 py-0.5 text-[10px] rounded flex items-center gap-1 transition-all ${value === 'flow' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}
+        title="Padrão (Início/Fim)"
+      >
+        <Move className="w-2.5 h-2.5" /> Normal
+      </button>
+      <button 
+        onClick={() => onChange('sticky')}
+        className={`px-2 py-0.5 text-[10px] rounded flex items-center gap-1 transition-all ${value === 'sticky' ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}
+        title="Fixo (Todas as Páginas)"
+      >
+        <Anchor className="w-2.5 h-2.5" /> Fixo
+      </button>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -112,39 +139,45 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
             <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
               <PanelTop className="w-3 h-3" /> Cabeçalho (Header)
             </label>
+            <PositionToggle value={headerPos} onChange={setHeaderPos} />
+          </div>
+          <div className="relative group">
+            <textarea
+              value={headerMarkdown}
+              onChange={(e) => setHeaderMarkdown(e.target.value)}
+              placeholder="Markdown para o cabeçalho..."
+              className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
+            />
             <button 
               onClick={onClearHeader}
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
               title="Limpar cabeçalho"
             >
               <Eraser className="w-3 h-3" />
             </button>
           </div>
-          <textarea
-            value={headerMarkdown}
-            onChange={(e) => setHeaderMarkdown(e.target.value)}
-            placeholder="Markdown para o cabeçalho..."
-            className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
-          />
 
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
               <PanelBottom className="w-3 h-3" /> Rodapé (Footer)
             </label>
+            <PositionToggle value={footerPos} onChange={setFooterPos} />
+          </div>
+          <div className="relative group">
+            <textarea
+              value={footerMarkdown}
+              onChange={(e) => setFooterMarkdown(e.target.value)}
+              placeholder="Markdown para o rodapé..."
+              className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
+            />
             <button 
               onClick={onClearFooter}
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
               title="Limpar rodapé"
             >
               <Eraser className="w-3 h-3" />
             </button>
           </div>
-          <textarea
-            value={footerMarkdown}
-            onChange={(e) => setFooterMarkdown(e.target.value)}
-            placeholder="Markdown para o rodapé..."
-            className="w-full p-2 h-16 text-[11px] font-mono bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-400 resize-none"
-          />
         </div>
       </div>
     </div>
