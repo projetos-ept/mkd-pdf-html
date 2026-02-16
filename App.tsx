@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Editor from './components/Editor.tsx';
 import Preview from './components/Preview.tsx';
 import ThemeSelector from './components/ThemeSelector.tsx';
 import DocumentSettings from './components/DocumentSettings.tsx';
 import { ThemeId, FontId, ElementPosition } from './types.ts';
 import { compileToHtml } from './services/compiler.ts';
-import { Download, Layers, Trash2, Printer, Upload, CheckCircle, Loader2 } from 'lucide-react';
+import { Download, Layers, Trash2, Printer, Upload, CheckCircle, Loader2, Save } from 'lucide-react';
+
+const STORAGE_KEY = 'staticmd_save_data';
 
 const INITIAL_HEADER = `### CETEP/LNAB
 **Professor:** Lucas Batista | **Turma:** 3TACM1
@@ -33,16 +35,53 @@ graph LR
 `;
 
 const App: React.FC = () => {
-  const [markdown, setMarkdown] = useState(INITIAL_MD);
-  const [headerMarkdown, setHeaderMarkdown] = useState(INITIAL_HEADER);
-  const [footerMarkdown, setFooterMarkdown] = useState(INITIAL_FOOTER);
-  const [headerPos, setHeaderPos] = useState<ElementPosition>('flow');
-  const [footerPos, setFooterPos] = useState<ElementPosition>('flow');
-  const [theme, setTheme] = useState<ThemeId>(ThemeId.MODERN);
-  const [fontFamily, setFontFamily] = useState<FontId>(FontId.SANS);
-  const [fontSize, setFontSize] = useState<number>(16);
+  // Inicialização do estado tentando ler do localStorage
+  const getInitialState = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const savedData = getInitialState();
+
+  const [markdown, setMarkdown] = useState(savedData?.markdown ?? INITIAL_MD);
+  const [headerMarkdown, setHeaderMarkdown] = useState(savedData?.headerMarkdown ?? INITIAL_HEADER);
+  const [footerMarkdown, setFooterMarkdown] = useState(savedData?.footerMarkdown ?? INITIAL_FOOTER);
+  const [headerPos, setHeaderPos] = useState<ElementPosition>(savedData?.headerPos ?? 'flow');
+  const [footerPos, setFooterPos] = useState<ElementPosition>(savedData?.footerPos ?? 'flow');
+  const [theme, setTheme] = useState<ThemeId>(savedData?.theme ?? ThemeId.MODERN);
+  const [fontFamily, setFontFamily] = useState<FontId>(savedData?.fontFamily ?? FontId.SANS);
+  const [fontSize, setFontSize] = useState<number>(savedData?.fontSize ?? 16);
+  
   const [isCompiling, setIsCompiling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Efeito para salvar automaticamente no localStorage
+  useEffect(() => {
+    setIsSaving(true);
+    const timeout = setTimeout(() => {
+      const dataToSave = {
+        markdown,
+        headerMarkdown,
+        footerMarkdown,
+        headerPos,
+        footerPos,
+        theme,
+        fontFamily,
+        fontSize
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      setIsSaving(false);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [markdown, headerMarkdown, footerMarkdown, headerPos, footerPos, theme, fontFamily, fontSize]);
 
   const handleDownloadHtml = () => {
     setIsCompiling(true);
@@ -53,16 +92,13 @@ const App: React.FC = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        
         const titleMatch = markdown.match(/^#\s+(.*)$/m);
         const fileName = titleMatch ? titleMatch[1].toLowerCase().replace(/\s+/g, '-') : 'documento-estatico';
-        
         a.download = `${fileName}.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       } catch (err) {
@@ -73,26 +109,22 @@ const App: React.FC = () => {
     }, 600);
   };
 
-  const handleExportPdf = () => {
-    window.print();
-  };
+  const handleExportPdf = () => window.print();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setMarkdown(content);
-    };
+    reader.onload = (event) => setMarkdown(event.target?.result as string);
     reader.readAsText(file);
   };
 
   const clearAll = () => {
-    if (confirm("Deseja realmente apagar todo o conteúdo?")) {
+    if (confirm("Deseja realmente iniciar um novo documento? Isso apagará o conteúdo atual.")) {
       setMarkdown("");
       setHeaderMarkdown("");
       setFooterMarkdown("");
+      localStorage.removeItem(STORAGE_KEY);
     }
   };
 
@@ -120,7 +152,10 @@ const App: React.FC = () => {
             <h1 className="text-lg font-extrabold tracking-tight leading-none text-slate-800">
               Static<span className="text-blue-600">MD</span>
             </h1>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Compiler v2.1</span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Compiler v2.2</span>
+              {isSaving && <Save className="w-2.5 h-2.5 text-blue-400 animate-pulse" />}
+            </div>
           </div>
         </div>
 
@@ -136,7 +171,7 @@ const App: React.FC = () => {
             className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all text-xs font-bold uppercase tracking-tighter"
           >
             <Trash2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Resetar</span>
+            <span className="hidden sm:inline">Novo Doc</span>
           </button>
 
           <div className="h-6 w-[1px] bg-slate-200 mx-1"></div>
@@ -154,22 +189,15 @@ const App: React.FC = () => {
             disabled={isCompiling}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold shadow-md transition-all text-sm disabled:opacity-50 ${showSuccess ? 'bg-green-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
           >
-            {isCompiling ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : showSuccess ? (
-              <CheckCircle className="w-4 h-4" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            {showSuccess ? 'Sucesso!' : isCompiling ? 'Compilando...' : 'Baixar HTML'}
+            {isCompiling ? <Loader2 className="w-4 h-4 animate-spin" /> : showSuccess ? <CheckCircle className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+            {showSuccess ? 'Pronto!' : isCompiling ? 'Processando...' : 'Baixar HTML'}
           </button>
         </div>
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden p-4 md:p-6 gap-6">
-        {/* Painel Lateral de Controle com Rolagem Própria */}
-        <aside className="w-full md:w-[400px] h-full flex flex-col gap-6 overflow-y-auto pr-1 print:hidden">
-          <div className="flex-none h-[400px] md:h-1/2 min-h-[300px]">
+        <aside className="w-full md:w-[400px] h-full flex flex-col gap-6 overflow-y-auto pr-1 print:hidden scroll-smooth">
+          <div className="flex-none h-[450px] md:h-2/3 min-h-[350px]">
             <Editor 
               value={markdown} 
               onChange={setMarkdown} 
@@ -182,7 +210,7 @@ const App: React.FC = () => {
             onThemeChange={setTheme} 
           />
           
-          <div className="flex-1">
+          <div className="flex-1 pb-4">
             <DocumentSettings 
               fontFamily={fontFamily}
               setFontFamily={setFontFamily}
@@ -203,7 +231,6 @@ const App: React.FC = () => {
           </div>
         </aside>
 
-        {/* Área de Visualização com Rolagem Própria e Limite Estético */}
         <section className="flex-1 h-full min-w-0 preview-container overflow-hidden">
           <Preview 
             markdown={markdown}
@@ -218,8 +245,12 @@ const App: React.FC = () => {
         </section>
       </main>
 
-      <footer className="app-footer bg-white border-t border-slate-200 px-6 py-2 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest flex-none print:hidden">
-        StaticMD - Documentos Otimizados para Mobile & Offline | Desenvolvido com carinho por LEDUK
+      <footer className="app-footer bg-white border-t border-slate-200 px-6 py-2 flex items-center justify-between text-[10px] text-slate-400 font-medium uppercase tracking-widest flex-none print:hidden">
+        <span>StaticMD - LEDUK</span>
+        <span className="flex items-center gap-2">
+          {isSaving ? "Sincronizando..." : "Alterações salvas no navegador"}
+          <div className={`w-1.5 h-1.5 rounded-full ${isSaving ? 'bg-blue-400 animate-pulse' : 'bg-green-400'}`} />
+        </span>
       </footer>
     </div>
   );

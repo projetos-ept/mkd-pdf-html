@@ -1,9 +1,9 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import MarkdownIt from 'markdown-it';
 import mermaid from 'mermaid';
 import { ThemeId, THEMES, FontId, ElementPosition } from '../types.ts';
-import { Eye } from 'lucide-react';
+import { Eye, Clock, AlignLeft, ListTree, ChevronRight } from 'lucide-react';
 
 interface PreviewProps {
   markdown: string;
@@ -14,6 +14,12 @@ interface PreviewProps {
   fontSize: number;
   headerPos: ElementPosition;
   footerPos: ElementPosition;
+}
+
+interface HeadingItem {
+  id: string;
+  text: string;
+  level: number;
 }
 
 const md = new MarkdownIt({
@@ -33,9 +39,18 @@ const Preview: React.FC<PreviewProps> = ({
   footerPos
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [headings, setHeadings] = useState<HeadingItem[]>([]);
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const theme = THEMES[themeId];
 
-  // Configura o Mermaid sempre que o tema ou fonte mudar
+  const stats = useMemo(() => {
+    const text = markdown + ' ' + headerMarkdown + ' ' + footerMarkdown;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const readingTime = Math.max(1, Math.ceil(words / 200));
+    return { words, readingTime };
+  }, [markdown, headerMarkdown, footerMarkdown]);
+
   useEffect(() => {
     mermaid.initialize({
       startOnLoad: false,
@@ -46,68 +61,109 @@ const Preview: React.FC<PreviewProps> = ({
     });
   }, [themeId, fontFamily]);
 
-  // Renderiza diagramas Mermaid quando o conteúdo ou estilo mudar
   useEffect(() => {
     let isMounted = true;
-    
-    const renderMermaid = async () => {
+    const renderMermaidAndExtractHeadings = async () => {
       if (!containerRef.current || !isMounted) return;
-      
+
+      // 1. Render Mermaid
       const blocks = containerRef.current.querySelectorAll('pre code.language-mermaid');
-      
       for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
         if (!pre || !isMounted) continue;
-        
         const content = block.textContent || '';
         const id = `mermaid-svg-${Math.random().toString(36).substr(2, 9)}`;
-        
         try {
-          // Renderiza o SVG
           const { svg } = await mermaid.render(id, content);
-          
           if (!isMounted) return;
-
           const div = document.createElement('div');
           div.className = 'mermaid-rendered my-6 flex justify-center w-full overflow-hidden';
           div.innerHTML = svg;
-          
-          // Garante que o SVG seja responsivo
-          const svgEl = div.querySelector('svg');
-          if (svgEl) {
-            svgEl.style.maxWidth = '100%';
-            svgEl.style.height = 'auto';
-            svgEl.style.display = 'block';
-          }
-          
           pre.replaceWith(div);
         } catch (err) {
-          console.error("Erro no Mermaid:", err);
           pre.classList.add('border-red-200', 'border', 'bg-red-50', 'p-2', 'rounded');
         }
       }
+
+      // 2. Extrair Headings para o Outline
+      const headingElements = containerRef.current.querySelectorAll('h1, h2, h3');
+      const newHeadings: HeadingItem[] = [];
+      headingElements.forEach((el, index) => {
+        const id = el.id || `heading-${index}`;
+        el.id = id;
+        newHeadings.push({
+          id,
+          text: el.textContent || '',
+          level: parseInt(el.tagName.replace('H', ''))
+        });
+      });
+      setHeadings(newHeadings);
     };
 
-    // Pequeno atraso para garantir que o DOM gerado pelo dangerouslySetInnerHTML esteja pronto
-    const timer = setTimeout(renderMermaid, 200);
-    
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-    };
+    const timer = setTimeout(renderMermaidAndExtractHeadings, 300);
+    return () => { isMounted = false; clearTimeout(timer); };
   }, [markdown, themeId, fontFamily, fontSize, headerMarkdown, footerMarkdown]); 
+
+  const scrollToHeading = (id: string) => {
+    const el = document.getElementById(id);
+    if (el && scrollContainerRef.current) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setIsOutlineOpen(false);
+    }
+  };
 
   const renderedHeaderHtml = md.render(headerMarkdown || '');
   const renderedContentHtml = md.render(markdown);
   const renderedFooterHtml = md.render(footerMarkdown || '');
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden print:bg-white print:border-none print:shadow-none">
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100 font-semibold text-gray-700 print:hidden">
-        <Eye className="w-4 h-4" />
-        Visualização (Live)
+    <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative print:bg-white print:border-none print:shadow-none">
+      {/* Header do Preview */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100 font-semibold text-gray-700 print:hidden z-20">
+        <div className="flex items-center gap-2">
+          <Eye className="w-4 h-4" />
+          <span>Live Preview</span>
+        </div>
+        <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider text-slate-400">
+           <span className="flex items-center gap-1"><AlignLeft className="w-3 h-3" /> {stats.words} palavras</span>
+           <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {stats.readingTime} min</span>
+           <button 
+             onClick={() => setIsOutlineOpen(!isOutlineOpen)}
+             className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isOutlineOpen ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 text-slate-500'}`}
+           >
+             <ListTree className="w-3.5 h-3.5" /> Sumário
+           </button>
+        </div>
       </div>
-      <div className="flex-1 overflow-auto bg-gray-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible relative">
+
+      {/* Overlay do Outline (Sumário) */}
+      {isOutlineOpen && (
+        <div className="absolute top-[49px] right-0 bottom-0 w-64 bg-white/95 backdrop-blur-md shadow-xl border-l border-slate-200 z-30 p-4 overflow-y-auto animate-in slide-in-from-right duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Estrutura do Doc</h4>
+            <button onClick={() => setIsOutlineOpen(false)} className="text-slate-400 hover:text-slate-600">×</button>
+          </div>
+          <nav className="space-y-1">
+            {headings.length === 0 && <p className="text-[10px] text-slate-400 italic">Nenhum título encontrado...</p>}
+            {headings.map((h, i) => (
+              <button
+                key={i}
+                onClick={() => scrollToHeading(h.id)}
+                className={`w-full text-left text-xs p-2 rounded hover:bg-blue-50 hover:text-blue-700 transition-colors flex items-start gap-2 ${h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-4 opacity-80' : 'pl-8 opacity-60'}`}
+              >
+                <ChevronRight className={`w-3 h-3 mt-0.5 shrink-0 ${h.level > 1 ? 'hidden' : ''}`} />
+                {h.text}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
+
+      {/* Área do Documento */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-auto bg-slate-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible relative scrollbar-thin"
+      >
         <div 
           id="printable-document"
           style={{ 
@@ -122,7 +178,7 @@ const Preview: React.FC<PreviewProps> = ({
           `}
         >
           {headerMarkdown && headerPos === 'sticky' && (
-            <header className="sticky top-0 z-30 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
+            <header className="sticky top-0 z-10 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
                     dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
           )}
 
@@ -135,7 +191,7 @@ const Preview: React.FC<PreviewProps> = ({
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
             
-            <article className="markdown-content w-full overflow-hidden" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
+            <article className="markdown-content w-full" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
 
             {footerMarkdown && footerPos === 'flow' && (
               <footer className="mt-16 pt-6 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
@@ -144,7 +200,7 @@ const Preview: React.FC<PreviewProps> = ({
           </div>
 
           {footerMarkdown && footerPos === 'sticky' && (
-            <footer className="sticky bottom-0 z-30 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
+            <footer className="sticky bottom-0 z-10 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
                     dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
           )}
         </div>
