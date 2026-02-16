@@ -31,9 +31,9 @@ export const compileToHtml = (
   const notebookStyles = isNotebook ? `
     .markdown-body {
         background-color: ${bgColor};
-        background-image: 
-            linear-gradient(90deg, transparent 79px, #ffccd5 79px, #ffccd5 81px, transparent 81px),
-            linear-gradient(90deg, transparent calc(100% - 81px), #ffccd5 calc(100% - 81px), #ffccd5 calc(100% - 79px), transparent calc(100% - 79px)),
+        background-image:
+            linear-gradient(90deg, transparent 24px, #ffccd5 24px, #ffccd5 26px, transparent 26px),
+            linear-gradient(90deg, transparent calc(100% - 26px), #ffccd5 calc(100% - 26px), #ffccd5 calc(100% - 24px), transparent calc(100% - 24px)),
             linear-gradient(#e5e7eb .1em, transparent .1em);
         background-size: 100% 100%, 100% 100%, 100% 1.5rem;
         background-position: 0 0, 0 0, 0 1.42rem;
@@ -49,13 +49,31 @@ export const compileToHtml = (
     }
     .markdown-body p, .markdown-body li {
         min-height: 1.5rem;
+        line-height: 1.5rem !important;
+        margin-top: 0 !important;
         margin-bottom: 1.5rem !important;
     }
-    .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    .markdown-body h1 {
         background: ${bgColor};
         display: inline-block;
         padding-right: 15px;
-        line-height: 1.2;
+        line-height: 3rem !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .markdown-body h2 {
+        background: ${bgColor};
+        display: inline-block;
+        padding-right: 15px;
+        line-height: 3rem !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .markdown-body h3 {
+        background: ${bgColor};
+        display: inline-block;
+        padding-right: 15px;
+        line-height: 1.5rem !important;
         margin-top: 1.5rem !important;
         margin-bottom: 1.5rem !important;
     }
