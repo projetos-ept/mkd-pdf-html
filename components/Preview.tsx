@@ -54,7 +54,7 @@ const Preview: React.FC<PreviewProps> = ({
   useEffect(() => {
     mermaid.initialize({
       startOnLoad: false,
-      theme: themeId === ThemeId.CYBER ? 'dark' : 'default',
+      theme: 'default',
       securityLevel: 'loose',
       fontFamily: fontFamily.split(',')[0].replace(/['"]/g, ''), 
       flowchart: { useMaxWidth: true, htmlLabels: true }
@@ -114,6 +114,8 @@ const Preview: React.FC<PreviewProps> = ({
   const renderedContentHtml = md.render(markdown || '');
   const renderedFooterHtml = footerMarkdown ? md.render(footerMarkdown) : null;
 
+  const isNotebook = themeId === ThemeId.NOTEBOOK;
+
   return (
     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative print:bg-white print:border-none print:shadow-none">
       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100 font-semibold text-gray-700 print:hidden z-20">
@@ -170,8 +172,46 @@ const Preview: React.FC<PreviewProps> = ({
             ${theme.bgClass} ${theme.textClass} shadow-2xl mx-auto relative
             max-w-[21cm] transition-all duration-300 print:shadow-none print:max-w-none print:w-full
             break-words overflow-wrap-anywhere
+            ${isNotebook ? 'notebook-layout' : ''}
           `}
         >
+          <style>{`
+            .notebook-layout {
+              background-image: 
+                linear-gradient(90deg, transparent 79px, #ffccd5 79px, #ffccd5 81px, transparent 81px),
+                linear-gradient(#e5e7eb .1em, transparent .1em);
+              background-size: 100% 1.5rem;
+              line-height: 1.5rem !important;
+              padding-top: 3rem !important;
+            }
+            .notebook-layout .prose article > * {
+              margin-top: 0 !important;
+              margin-bottom: 1.5rem !important;
+            }
+            .notebook-layout .prose p, .notebook-layout .prose li {
+              min-height: 1.5rem;
+              margin-bottom: 1.5rem !important;
+            }
+            .notebook-layout .prose h1, .notebook-layout .prose h2, .notebook-layout .prose h3 {
+              background: #fdfdf7;
+              display: inline-block;
+              padding-right: 15px;
+              margin-top: 1.5rem !important;
+              margin-bottom: 1.5rem !important;
+              line-height: 1.2;
+            }
+            .notebook-layout .mermaid-rendered, .notebook-layout .prose img, .notebook-layout .prose table, .notebook-layout .prose pre, .notebook-layout .prose blockquote {
+              background: #fdfdf7;
+              padding: 1.5rem;
+              border-radius: 4px;
+              box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+              margin-bottom: 1.5rem !important;
+              border: 1px solid rgba(0,0,0,0.05);
+              position: relative;
+              z-index: 10;
+            }
+          `}</style>
+
           {renderedHeaderHtml && headerPos === 'sticky' && (
             <header className="sticky top-0 z-10 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
                     dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
@@ -179,7 +219,7 @@ const Preview: React.FC<PreviewProps> = ({
 
           <div 
             ref={containerRef}
-            className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''} break-words`}
+            className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg break-words`}
           >
             {renderedHeaderHtml && headerPos === 'flow' && (
               <header className="mb-10 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 

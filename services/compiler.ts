@@ -23,10 +23,52 @@ export const compileToHtml = (
   const renderedContent = md.render(markdown);
   const renderedFooter = footerMd ? md.render(footerMd) : '';
 
-  const isDark = themeId === ThemeId.CYBER;
-  const bgColor = isDark ? '#020617' : (themeId === ThemeId.SEPIA ? '#f4ecd8' : '#ffffff');
-  const textColor = isDark ? '#e2e8f0' : (themeId === ThemeId.SEPIA ? '#433422' : '#111827');
-  const accentColor = isDark ? '#22d3ee' : '#2563eb';
+  const isNotebook = themeId === ThemeId.NOTEBOOK;
+  const bgColor = isNotebook ? '#fdfdf7' : (themeId === ThemeId.SEPIA ? '#f4ecd8' : '#ffffff');
+  const textColor = themeId === ThemeId.SEPIA ? '#433422' : '#111827';
+  const accentColor = isNotebook ? '#f43f5e' : (themeId === ThemeId.SEPIA ? '#8b5e3c' : '#2563eb');
+
+  const notebookStyles = isNotebook ? `
+    .markdown-body {
+        background-color: ${bgColor};
+        background-image: 
+            linear-gradient(90deg, transparent 79px, #ffccd5 79px, #ffccd5 81px, transparent 81px),
+            linear-gradient(#e5e7eb .1em, transparent .1em);
+        background-size: 100% 1.5rem;
+        line-height: 1.5rem !important;
+        position: relative;
+        padding-top: 3rem !important;
+    }
+    .markdown-body article > * {
+        margin-top: 0 !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .markdown-body p, .markdown-body li {
+        min-height: 1.5rem;
+        margin-bottom: 1.5rem !important;
+    }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+        background: ${bgColor};
+        display: inline-block;
+        padding-right: 15px;
+        line-height: 1.2;
+        margin-top: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    .mermaid-rendered, .markdown-body img, .markdown-body table, .markdown-body pre, .markdown-body blockquote {
+        background: ${bgColor};
+        padding: 1.5rem;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        margin-bottom: 1.5rem !important;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 10;
+    }
+    .markdown-body ul, .markdown-body ol {
+        margin-left: 2rem;
+    }
+  ` : '';
 
   return `
 <!DOCTYPE html>
@@ -45,7 +87,7 @@ export const compileToHtml = (
             margin: 0; padding: 0; 
             font-family: ${fontFamily}; 
             font-size: ${fontSize}px;
-            background-color: ${bgColor}; 
+            background-color: ${isNotebook ? '#f3f4f6' : bgColor}; 
             color: ${textColor};
             line-height: 1.6;
             scroll-behavior: smooth;
@@ -55,18 +97,19 @@ export const compileToHtml = (
             padding: 2rem 1.5rem;
             margin: 0 auto;
             min-height: 100vh;
+            background-color: ${bgColor};
         }
         @media (min-width: 768px) {
-            .markdown-body { padding: 4rem; max-width: 21cm; }
+            .markdown-body { padding: 4rem; max-width: 21cm; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
         }
         
-        /* Typography */
-        .markdown-body h1 { font-size: 2.5em; font-weight: 800; margin-bottom: 0.8em; border-bottom: 3px solid var(--accent); padding-bottom: 0.3em; }
-        .markdown-body h2 { font-size: 1.8em; font-weight: 700; margin-top: 2em; margin-bottom: 0.8em; }
-        .markdown-body h3 { font-size: 1.4em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.6em; }
-        .markdown-body p { margin-bottom: 1.2em; text-align: justify; }
+        ${notebookStyles}
+
+        /* Typography Defaults */
+        .markdown-body h1 { font-size: 2.5em; font-weight: 800; border-bottom: 3px solid var(--accent); }
+        .markdown-body h2 { font-size: 1.8em; font-weight: 700; }
+        .markdown-body h3 { font-size: 1.4em; font-weight: 700; }
         
-        /* Table of Contents */
         #toc-container {
             background: rgba(128,128,128,0.05);
             border: 1px solid rgba(128,128,128,0.1);
@@ -74,7 +117,7 @@ export const compileToHtml = (
             padding: 1.5rem;
             margin-bottom: 3rem;
         }
-        #toc-container h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); border: none; }
+        #toc-container h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); border: none; background: transparent; }
         #toc-list { list-style: none; padding: 0; margin: 0; }
         #toc-list li { margin: 0.5rem 0; }
         #toc-list a { text-decoration: none; color: inherit; opacity: 0.7; font-size: 0.9em; transition: opacity 0.2s; }
@@ -82,13 +125,9 @@ export const compileToHtml = (
         .toc-h2 { margin-left: 0.5rem; }
         .toc-h3 { margin-left: 1.5rem; font-size: 0.85em !important; }
 
-        /* Elements */
         .markdown-body table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; display: block; overflow-x: auto; }
         .markdown-body th, .markdown-body td { border: 1px solid rgba(128,128,128,0.2); padding: 0.75rem; text-align: left; }
-        .markdown-body th { background: rgba(128,128,128,0.05); }
-        .markdown-body img { max-width: 100%; height: auto; border-radius: 12px; margin: 2rem auto; display: block; }
-        .markdown-body blockquote { border-left: 4px solid var(--accent); padding-left: 1rem; font-style: italic; opacity: 0.8; margin: 1.5rem 0; }
-        .markdown-body code { background: rgba(128,128,128,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+        .markdown-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem auto; display: block; }
         
         header.doc-header { margin-bottom: 3rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(128,128,128,0.1); }
         footer.doc-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(128,128,128,0.1); font-size: 0.9em; opacity: 0.7; }
@@ -96,7 +135,7 @@ export const compileToHtml = (
         @media print {
             body { background: white !important; color: black !important; }
             #toc-container { display: none; }
-            .markdown-body { padding: 0; max-width: none; }
+            .markdown-body { padding: 0; max-width: none; box-shadow: none !important; }
             ${headerPos === 'sticky' ? `header.doc-header { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 1cm; border-bottom: 1px solid #eee; z-index: 100; }` : ''}
             ${footerPos === 'sticky' ? `footer.doc-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 0.5cm; border-top: 1px solid #eee; z-index: 100; }` : ''}
         }
@@ -122,12 +161,11 @@ export const compileToHtml = (
     <script>
         mermaid.initialize({ 
             startOnLoad: false, 
-            theme: '${isDark ? 'dark' : 'default'}',
+            theme: 'default',
             fontFamily: '${fontFamily.split(',')[0]}'
         });
 
         window.addEventListener('DOMContentLoaded', async () => {
-            // Generate TOC
             const content = document.getElementById('main-content');
             const tocList = document.getElementById('toc-list');
             const headings = content.querySelectorAll('h1, h2, h3');
@@ -148,7 +186,6 @@ export const compileToHtml = (
                 tocList.appendChild(li);
             });
 
-            // Render Mermaid
             const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
             for (const block of mermaidBlocks) {
                 const pre = block.parentElement;
@@ -156,7 +193,7 @@ export const compileToHtml = (
                 try {
                     const { svg } = await mermaid.render(id, block.textContent);
                     const div = document.createElement('div');
-                    div.className = 'flex justify-center my-8';
+                    div.className = 'mermaid-rendered flex justify-center my-8';
                     div.innerHTML = svg;
                     pre.replaceWith(div);
                 } catch (err) {

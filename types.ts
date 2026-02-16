@@ -2,7 +2,7 @@
 export enum ThemeId {
   MODERN = 'modern',
   SEPIA = 'sepia',
-  CYBER = 'cyber'
+  NOTEBOOK = 'notebook'
 }
 
 export enum FontId {
@@ -50,13 +50,13 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     fontFamily: 'font-serif',
     containerClass: 'max-w-screen-md mx-auto p-6 md:p-12 font-lora'
   },
-  [ThemeId.CYBER]: {
-    id: ThemeId.CYBER,
-    name: 'Cyber Dark',
-    bgClass: 'bg-slate-950',
-    textClass: 'text-slate-200',
-    accentClass: 'text-cyan-400 border-cyan-400',
-    fontFamily: 'font-mono',
-    containerClass: 'max-w-screen-md mx-auto p-6 md:p-12 font-mono'
+  [ThemeId.NOTEBOOK]: {
+    id: ThemeId.NOTEBOOK,
+    name: 'Caderno Pautado',
+    bgClass: 'bg-[#fdfdf7]',
+    textClass: 'text-slate-800',
+    accentClass: 'text-rose-500 border-rose-500',
+    fontFamily: 'font-sans',
+    containerClass: 'max-w-screen-md mx-auto p-6 md:p-12'
   }
 };
