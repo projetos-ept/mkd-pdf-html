@@ -46,7 +46,6 @@ const App: React.FC = () => {
 
   const handleDownloadHtml = () => {
     setIsCompiling(true);
-    // Pequeno delay para feedback visual
     setTimeout(() => {
       try {
         const fullHtml = compileToHtml(markdown, theme, headerMarkdown, footerMarkdown, fontFamily, fontSize, headerPos, footerPos);
@@ -98,11 +97,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="h-screen flex flex-col bg-slate-50 text-slate-900 overflow-hidden">
       <style>{`
         @media print {
           @page { margin: 0; size: auto; }
-          body { background: white !important; margin: 0 !important; }
+          body, html, #root { height: auto !important; overflow: visible !important; background: white !important; }
           .app-header, aside, .editor-container, .no-print, button, label, .app-footer { display: none !important; }
           #root, main { display: block !important; height: auto !important; overflow: visible !important; }
           .preview-container { display: block !important; width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: white !important; }
@@ -110,11 +109,9 @@ const App: React.FC = () => {
           .prose { max-width: none !important; width: 100% !important; }
           img { max-width: 100% !important; page-break-inside: avoid; }
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <header className="app-header bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm print:hidden">
+      <header className="app-header bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-40 shadow-sm print:hidden">
         <div className="flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-lg shadow-lg">
             <Layers className="text-white w-5 h-5" />
@@ -170,9 +167,9 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden p-4 md:p-6 gap-6">
-        {/* Painel Lateral de Controle */}
-        <aside className="w-full md:w-[400px] flex flex-col gap-6 overflow-y-auto no-scrollbar pb-6 print:hidden">
-          <div className="flex-1 min-h-[400px]">
+        {/* Painel Lateral de Controle com Rolagem Própria */}
+        <aside className="w-full md:w-[400px] h-full flex flex-col gap-6 overflow-y-auto pr-1 print:hidden">
+          <div className="flex-none h-[400px] md:h-1/2 min-h-[300px]">
             <Editor 
               value={markdown} 
               onChange={setMarkdown} 
@@ -185,27 +182,29 @@ const App: React.FC = () => {
             onThemeChange={setTheme} 
           />
           
-          <DocumentSettings 
-            fontFamily={fontFamily}
-            setFontFamily={setFontFamily}
-            fontSize={fontSize}
-            setFontSize={setFontSize}
-            headerMarkdown={headerMarkdown}
-            setHeaderMarkdown={setHeaderMarkdown}
-            footerMarkdown={footerMarkdown}
-            setFooterMarkdown={setFooterMarkdown}
-            setMarkdown={setMarkdown}
-            headerPos={headerPos}
-            setHeaderPos={setHeaderPos}
-            footerPos={footerPos}
-            setFooterPos={setFooterPos}
-            onClearHeader={() => setHeaderMarkdown("")}
-            onClearFooter={() => setFooterMarkdown("")}
-          />
+          <div className="flex-1">
+            <DocumentSettings 
+              fontFamily={fontFamily}
+              setFontFamily={setFontFamily}
+              fontSize={fontSize}
+              setFontSize={setFontSize}
+              headerMarkdown={headerMarkdown}
+              setHeaderMarkdown={setHeaderMarkdown}
+              footerMarkdown={footerMarkdown}
+              setFooterMarkdown={setFooterMarkdown}
+              setMarkdown={setMarkdown}
+              headerPos={headerPos}
+              setHeaderPos={setHeaderPos}
+              footerPos={footerPos}
+              setFooterPos={setFooterPos}
+              onClearHeader={() => setHeaderMarkdown("")}
+              onClearFooter={() => setFooterMarkdown("")}
+            />
+          </div>
         </aside>
 
-        {/* Área de Visualização */}
-        <section className="flex-1 min-w-0 preview-container">
+        {/* Área de Visualização com Rolagem Própria e Limite Estético */}
+        <section className="flex-1 h-full min-w-0 preview-container overflow-hidden">
           <Preview 
             markdown={markdown}
             headerMarkdown={headerMarkdown}
@@ -219,7 +218,7 @@ const App: React.FC = () => {
         </section>
       </main>
 
-      <footer className="app-footer bg-white border-t border-slate-200 px-6 py-3 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest print:hidden">
+      <footer className="app-footer bg-white border-t border-slate-200 px-6 py-2 text-center text-[10px] text-slate-400 font-medium uppercase tracking-widest flex-none print:hidden">
         StaticMD - Documentos Otimizados para Mobile & Offline | Desenvolvido com carinho por LEDUK
       </footer>
     </div>
