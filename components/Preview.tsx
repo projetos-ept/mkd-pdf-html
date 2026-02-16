@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useMemo, useState } from 'react';
 import MarkdownIt from 'markdown-it';
 import mermaid from 'mermaid';
 import { ThemeId, THEMES, FontId, ElementPosition } from '../types.ts';
-import { Eye, Clock, AlignLeft, ListTree, ChevronRight } from 'lucide-react';
+import { Eye, Clock, AlignLeft, ListTree, ChevronRight, Maximize2 } from 'lucide-react';
 
 interface PreviewProps {
   markdown: string;
@@ -14,12 +14,19 @@ interface PreviewProps {
   fontSize: number;
   headerPos: ElementPosition;
   footerPos: ElementPosition;
+  onImageResize?: (imgId: string, newWidth: string) => void;
 }
 
 interface HeadingItem {
   id: string;
   text: string;
   level: number;
+}
+
+interface SelectedImage {
+  id: string;
+  el: HTMLImageElement;
+  rect: DOMRect;
 }
 
 const md = new MarkdownIt({
@@ -36,12 +43,14 @@ const Preview: React.FC<PreviewProps> = ({
   fontFamily, 
   fontSize,
   headerPos,
-  footerPos
+  footerPos,
+  onImageResize
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [headings, setHeadings] = useState<HeadingItem[]>([]);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [selectedImg, setSelectedImg] = useState<SelectedImage | null>(null);
   const theme = THEMES[themeId];
 
   const stats = useMemo(() => {
@@ -63,10 +72,10 @@ const Preview: React.FC<PreviewProps> = ({
 
   useEffect(() => {
     let isMounted = true;
-    const renderMermaidAndExtractHeadings = async () => {
+    const renderContent = async () => {
       if (!containerRef.current || !isMounted) return;
 
-      // 1. Render Mermaid
+      // Render Mermaid
       const blocks = containerRef.current.querySelectorAll('pre code.language-mermaid');
       for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
@@ -85,7 +94,7 @@ const Preview: React.FC<PreviewProps> = ({
         }
       }
 
-      // 2. Extrair Headings para o Outline
+      // Extract Headings
       const headingElements = containerRef.current.querySelectorAll('h1, h2, h3');
       const newHeadings: HeadingItem[] = [];
       headingElements.forEach((el, index) => {
@@ -98,11 +107,77 @@ const Preview: React.FC<PreviewProps> = ({
         });
       });
       setHeadings(newHeadings);
+      
+      // Clear selection if content changed
+      setSelectedImg(null);
     };
 
-    const timer = setTimeout(renderMermaidAndExtractHeadings, 300);
+    const timer = setTimeout(renderContent, 300);
     return () => { isMounted = false; clearTimeout(timer); };
   }, [markdown, themeId, fontFamily, fontSize, headerMarkdown, footerMarkdown]); 
+
+  // Listener para capturar cliques em imagens
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG' && target.dataset.id) {
+        setSelectedImg({
+          id: target.dataset.id,
+          el: target as HTMLImageElement,
+          rect: target.getBoundingClientRect()
+        });
+      } else if (!target.closest('.resizer-handle')) {
+        setSelectedImg(null);
+      }
+    };
+
+    containerRef.current?.addEventListener('click', handleClick);
+    return () => containerRef.current?.removeEventListener('click', handleClick);
+  }, []);
+
+  // Atualiza o rect do overlay quando der scroll
+  useEffect(() => {
+    const updateRect = () => {
+      if (selectedImg) {
+        setSelectedImg(prev => prev ? { ...prev, rect: prev.el.getBoundingClientRect() } : null);
+      }
+    };
+    scrollContainerRef.current?.addEventListener('scroll', updateRect);
+    window.addEventListener('resize', updateRect);
+    return () => {
+      scrollContainerRef.current?.removeEventListener('scroll', updateRect);
+      window.removeEventListener('resize', updateRect);
+    };
+  }, [selectedImg]);
+
+  const handleResizeDrag = (e: React.PointerEvent, corner: string) => {
+    if (!selectedImg || !onImageResize) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = selectedImg.rect.width;
+    const parentWidth = selectedImg.el.parentElement?.clientWidth || 800;
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      let newWidthPx = startWidth + (corner.includes('right') ? deltaX : -deltaX) * 2;
+      // Limites
+      newWidthPx = Math.max(50, Math.min(newWidthPx, parentWidth));
+      const percentage = (newWidthPx / parentWidth) * 100;
+      
+      selectedImg.el.style.width = `${percentage}%`;
+      setSelectedImg(prev => prev ? { ...prev, rect: prev.el.getBoundingClientRect() } : null);
+    };
+
+    const onPointerUp = () => {
+      const finalWidth = selectedImg.el.style.width || "100%";
+      onImageResize(selectedImg.id, finalWidth);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  };
 
   const scrollToHeading = (id: string) => {
     const el = document.getElementById(id);
@@ -118,7 +193,6 @@ const Preview: React.FC<PreviewProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative print:bg-white print:border-none print:shadow-none">
-      {/* Header do Preview */}
       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100 font-semibold text-gray-700 print:hidden z-20">
         <div className="flex items-center gap-2">
           <Eye className="w-4 h-4" />
@@ -136,7 +210,6 @@ const Preview: React.FC<PreviewProps> = ({
         </div>
       </div>
 
-      {/* Overlay do Outline (Sumário) */}
       {isOutlineOpen && (
         <div className="absolute top-[49px] right-0 bottom-0 w-64 bg-white/95 backdrop-blur-md shadow-xl border-l border-slate-200 z-30 p-4 overflow-y-auto animate-in slide-in-from-right duration-200">
           <div className="flex items-center justify-between mb-4">
@@ -159,7 +232,28 @@ const Preview: React.FC<PreviewProps> = ({
         </div>
       )}
 
-      {/* Área do Documento */}
+      {/* Overlay de Redimensionamento */}
+      {selectedImg && (
+        <div 
+          className="fixed pointer-events-none z-50 border-2 border-blue-500 ring-4 ring-blue-500/20"
+          style={{
+            top: selectedImg.rect.top,
+            left: selectedImg.rect.left,
+            width: selectedImg.rect.width,
+            height: selectedImg.rect.height
+          }}
+        >
+          <div className="absolute -top-3 -left-3 pointer-events-auto cursor-nw-resize bg-white border-2 border-blue-500 w-4 h-4 rounded-full shadow-lg resizer-handle" onPointerDown={(e) => handleResizeDrag(e, 'topleft')} />
+          <div className="absolute -top-3 -right-3 pointer-events-auto cursor-ne-resize bg-white border-2 border-blue-500 w-4 h-4 rounded-full shadow-lg resizer-handle" onPointerDown={(e) => handleResizeDrag(e, 'topright')} />
+          <div className="absolute -bottom-3 -left-3 pointer-events-auto cursor-sw-resize bg-white border-2 border-blue-500 w-4 h-4 rounded-full shadow-lg resizer-handle" onPointerDown={(e) => handleResizeDrag(e, 'bottomleft')} />
+          <div className="absolute -bottom-3 -right-3 pointer-events-auto cursor-se-resize bg-white border-2 border-blue-500 w-4 h-4 rounded-full shadow-lg resizer-handle" onPointerDown={(e) => handleResizeDrag(e, 'bottomright')} />
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+            <Maximize2 className="w-3 h-3" />
+            {( (selectedImg.rect.width / (selectedImg.el.parentElement?.clientWidth || 1)) * 100 ).toFixed(0)}%
+          </div>
+        </div>
+      )}
+
       <div 
         ref={scrollContainerRef}
         className="flex-1 overflow-auto bg-slate-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible relative scrollbar-thin"

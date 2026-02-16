@@ -35,7 +35,6 @@ graph LR
 `;
 
 const App: React.FC = () => {
-  // Inicialização do estado tentando ler do localStorage
   const getInitialState = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -63,7 +62,6 @@ const App: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Efeito para salvar automaticamente no localStorage
   useEffect(() => {
     setIsSaving(true);
     const timeout = setTimeout(() => {
@@ -107,6 +105,15 @@ const App: React.FC = () => {
         setIsCompiling(false);
       }
     }, 600);
+  };
+
+  const handleImageResize = (imgId: string, newWidth: string) => {
+    // Regex para encontrar a tag img com o data-id específico e atualizar o atributo width
+    const regex = new RegExp(`(<img[^>]*data-id="${imgId}"[^>]*width=")([^"]*)("[^>]*>)`, 'g');
+    const newMarkdown = markdown.replace(regex, `$1${newWidth}$3`);
+    if (newMarkdown !== markdown) {
+      setMarkdown(newMarkdown);
+    }
   };
 
   const handleExportPdf = () => window.print();
@@ -226,7 +233,7 @@ const App: React.FC = () => {
               footerPos={footerPos}
               setFooterPos={setFooterPos}
               onClearHeader={() => setHeaderMarkdown("")}
-              onClearFooter={() => setFooterMarkdown("")}
+              onClearFooter={() => setHeaderMarkdown("")}
             />
           </div>
         </aside>
@@ -241,6 +248,7 @@ const App: React.FC = () => {
             fontSize={fontSize}
             headerPos={headerPos}
             footerPos={footerPos}
+            onImageResize={handleImageResize}
           />
         </section>
       </main>

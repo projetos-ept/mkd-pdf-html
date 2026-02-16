@@ -52,8 +52,9 @@ export const compileToHtml = (
         
         .markdown-body {
             max-width: 100%;
-            padding: 2rem;
+            padding: 1.5rem;
             margin: 0 auto;
+            min-height: 100vh;
         }
         @media (min-width: 768px) {
             .markdown-body { padding: 4rem; max-width: 21cm; }
@@ -68,27 +69,26 @@ export const compileToHtml = (
         .markdown-body pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1rem; }
         .markdown-body table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; display: block; overflow-x: auto; }
         .markdown-body th, .markdown-body td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; min-width: 120px; }
+        .markdown-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 1rem auto; display: block; }
         
         #toc-container {
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 8px;
+            background: rgba(128,128,128,0.05);
+            border: 1px solid rgba(128,128,128,0.15);
+            border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 3rem;
         }
-        #toc-container h2 { margin-top: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-color); }
+        #toc-container h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-color); border: none; }
         #toc-list { list-style: none; padding: 0; margin: 0; }
-        #toc-list li { margin: 0.5rem 0; }
-        #toc-list a { text-decoration: none; color: inherit; opacity: 0.8; transition: opacity 0.2s; }
-        #toc-list a:hover { opacity: 1; color: var(--accent-color); }
-        .toc-h2 { margin-left: 1rem !important; font-size: 0.9em; }
-        .toc-h3 { margin-left: 2rem !important; font-size: 0.85em; }
+        #toc-list li { margin: 0.4rem 0; border-bottom: 1px dashed rgba(128,128,128,0.1); padding-bottom: 0.4rem; }
+        #toc-list a { text-decoration: none; color: inherit; opacity: 0.7; transition: all 0.2s; font-size: 0.9em; }
+        #toc-list a:hover { opacity: 1; color: var(--accent-color); padding-left: 4px; }
+        .toc-h2 { margin-left: 1rem !important; }
+        .toc-h3 { margin-left: 2rem !important; }
 
-        header.doc-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        footer.doc-footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1); font-size: 0.85em; opacity: 0.8; }
+        header.doc-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(128,128,128,0.2); }
+        footer.doc-footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid rgba(128,128,128,0.2); font-size: 0.8em; opacity: 0.6; text-align: center; }
 
-        .mermaid { margin: 2rem 0; display: flex; justify-content: center; width: 100%; }
-        
         @media print {
             body { background: white !important; color: black !important; }
             #toc-container { display: none; }
@@ -116,21 +116,20 @@ export const compileToHtml = (
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <script>
-        // Mermaid Init
         mermaid.initialize({ 
             startOnLoad: false,
             theme: '${themeId === ThemeId.CYBER ? 'dark' : 'default'}',
             securityLevel: 'loose'
         });
         
-        // TOC and Mermaid Render
         window.addEventListener('DOMContentLoaded', async () => {
             const content = document.getElementById('main-content');
             const tocList = document.getElementById('toc-list');
             const headings = content.querySelectorAll('h1, h2, h3');
             
             if (headings.length < 2) {
-                document.getElementById('toc-container').style.display = 'none';
+                const toc = document.getElementById('toc-container');
+                if (toc) toc.style.display = 'none';
             }
 
             headings.forEach((h, i) => {
@@ -142,7 +141,7 @@ export const compileToHtml = (
                 a.href = '#' + id;
                 a.textContent = h.textContent;
                 li.appendChild(a);
-                tocList.appendChild(li);
+                if(tocList) tocList.appendChild(li);
             });
 
             const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
@@ -152,7 +151,7 @@ export const compileToHtml = (
                 try {
                     const { svg } = await mermaid.render(id, block.textContent);
                     const div = document.createElement('div');
-                    div.className = 'mermaid';
+                    div.className = 'flex justify-center my-8';
                     div.innerHTML = svg;
                     pre.replaceWith(div);
                 } catch (err) {}
