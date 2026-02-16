@@ -45,7 +45,7 @@ const Preview: React.FC<PreviewProps> = ({
   const theme = THEMES[themeId];
 
   const stats = useMemo(() => {
-    const text = markdown + ' ' + headerMarkdown + ' ' + footerMarkdown;
+    const text = (markdown || '') + ' ' + (headerMarkdown || '') + ' ' + (footerMarkdown || '');
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const readingTime = Math.max(1, Math.ceil(words / 200));
     return { words, readingTime };
@@ -66,7 +66,6 @@ const Preview: React.FC<PreviewProps> = ({
     const renderContent = async () => {
       if (!containerRef.current || !isMounted) return;
 
-      // Render Mermaid
       const blocks = containerRef.current.querySelectorAll('pre code.language-mermaid');
       for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
@@ -85,11 +84,10 @@ const Preview: React.FC<PreviewProps> = ({
         }
       }
 
-      // Extract Headings
       const headingElements = containerRef.current.querySelectorAll('h1, h2, h3');
       const newHeadings: HeadingItem[] = [];
       headingElements.forEach((el, index) => {
-        const id = el.id || `heading-${index}`;
+        const id = `heading-${index}`;
         el.id = id;
         newHeadings.push({
           id,
@@ -112,9 +110,9 @@ const Preview: React.FC<PreviewProps> = ({
     }
   };
 
-  const renderedHeaderHtml = md.render(headerMarkdown || '');
-  const renderedContentHtml = md.render(markdown);
-  const renderedFooterHtml = md.render(footerMarkdown || '');
+  const renderedHeaderHtml = headerMarkdown ? md.render(headerMarkdown) : null;
+  const renderedContentHtml = md.render(markdown || '');
+  const renderedFooterHtml = footerMarkdown ? md.render(footerMarkdown) : null;
 
   return (
     <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative print:bg-white print:border-none print:shadow-none">
@@ -174,7 +172,7 @@ const Preview: React.FC<PreviewProps> = ({
             break-words overflow-wrap-anywhere
           `}
         >
-          {headerMarkdown && headerPos === 'sticky' && (
+          {renderedHeaderHtml && headerPos === 'sticky' && (
             <header className="sticky top-0 z-10 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
                     dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
           )}
@@ -183,20 +181,20 @@ const Preview: React.FC<PreviewProps> = ({
             ref={containerRef}
             className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg ${themeId === ThemeId.CYBER ? 'prose-invert' : ''} break-words`}
           >
-            {headerMarkdown && headerPos === 'flow' && (
+            {renderedHeaderHtml && headerPos === 'flow' && (
               <header className="mb-10 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
             
             <article className="markdown-content w-full" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
 
-            {footerMarkdown && footerPos === 'flow' && (
+            {renderedFooterHtml && footerPos === 'flow' && (
               <footer className="mt-16 pt-6 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
                       dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
             )}
           </div>
 
-          {footerMarkdown && footerPos === 'sticky' && (
+          {renderedFooterHtml && footerPos === 'sticky' && (
             <footer className="sticky bottom-0 z-10 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
                     dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
           )}
