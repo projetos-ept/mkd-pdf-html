@@ -107,15 +107,6 @@ const App: React.FC = () => {
     }, 600);
   };
 
-  const handleImageResize = (imgId: string, newWidth: string) => {
-    // Regex para encontrar a tag img com o data-id específico e atualizar o atributo width
-    const regex = new RegExp(`(<img[^>]*data-id="${imgId}"[^>]*width=")([^"]*)("[^>]*>)`, 'g');
-    const newMarkdown = markdown.replace(regex, `$1${newWidth}$3`);
-    if (newMarkdown !== markdown) {
-      setMarkdown(newMarkdown);
-    }
-  };
-
   const handleExportPdf = () => window.print();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,7 +239,6 @@ const App: React.FC = () => {
             fontSize={fontSize}
             headerPos={headerPos}
             footerPos={footerPos}
-            onImageResize={handleImageResize}
           />
         </section>
       </main>
