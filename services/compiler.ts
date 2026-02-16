@@ -33,15 +33,19 @@ export const compileToHtml = (
         background-color: ${bgColor};
         background-image: 
             linear-gradient(90deg, transparent 79px, #ffccd5 79px, #ffccd5 81px, transparent 81px),
+            linear-gradient(90deg, transparent calc(100% - 81px), #ffccd5 calc(100% - 81px), #ffccd5 calc(100% - 79px), transparent calc(100% - 79px)),
             linear-gradient(#e5e7eb .1em, transparent .1em);
-        background-size: 100% 1.5rem;
+        background-size: 100% 100%, 100% 100%, 100% 1.5rem;
+        background-position: 0 0, 0 0, 0 1.42rem;
+        background-repeat: no-repeat, no-repeat, repeat;
         line-height: 1.5rem !important;
         position: relative;
-        padding-top: 3rem !important;
+        padding-top: 1.5rem !important;
     }
-    .markdown-body article > * {
+    .markdown-body article > *, .markdown-body header, .markdown-body footer {
         margin-top: 0 !important;
         margin-bottom: 1.5rem !important;
+        line-height: 1.5rem !important;
     }
     .markdown-body p, .markdown-body li {
         min-height: 1.5rem;
@@ -116,6 +120,7 @@ export const compileToHtml = (
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 3rem;
+            ${isNotebook ? `background: ${bgColor}; position: relative; z-index: 10;` : ''}
         }
         #toc-container h2 { margin-top: 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); border: none; background: transparent; }
         #toc-list { list-style: none; padding: 0; margin: 0; }

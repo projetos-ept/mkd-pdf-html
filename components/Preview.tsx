@@ -179,14 +179,18 @@ const Preview: React.FC<PreviewProps> = ({
             .notebook-layout {
               background-image: 
                 linear-gradient(90deg, transparent 79px, #ffccd5 79px, #ffccd5 81px, transparent 81px),
+                linear-gradient(90deg, transparent calc(100% - 81px), #ffccd5 calc(100% - 81px), #ffccd5 calc(100% - 79px), transparent calc(100% - 79px)),
                 linear-gradient(#e5e7eb .1em, transparent .1em);
-              background-size: 100% 1.5rem;
+              background-size: 100% 100%, 100% 100%, 100% 1.5rem;
+              background-position: 0 0, 0 0, 0 1.42rem;
+              background-repeat: no-repeat, no-repeat, repeat;
               line-height: 1.5rem !important;
-              padding-top: 3rem !important;
+              padding-top: 1.5rem !important;
             }
-            .notebook-layout .prose article > * {
+            .notebook-layout .prose article > *, .notebook-layout .prose header, .notebook-layout .prose footer {
               margin-top: 0 !important;
               margin-bottom: 1.5rem !important;
+              line-height: 1.5rem !important;
             }
             .notebook-layout .prose p, .notebook-layout .prose li {
               min-height: 1.5rem;
@@ -213,7 +217,7 @@ const Preview: React.FC<PreviewProps> = ({
           `}</style>
 
           {renderedHeaderHtml && headerPos === 'sticky' && (
-            <header className="sticky top-0 z-10 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
+            <header className="sticky top-0 z-20 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
                     dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
           )}
 
@@ -235,7 +239,7 @@ const Preview: React.FC<PreviewProps> = ({
           </div>
 
           {renderedFooterHtml && footerPos === 'sticky' && (
-            <footer className="sticky bottom-0 z-10 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
+            <footer className="sticky bottom-0 z-20 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
                     dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
           )}
         </div>
