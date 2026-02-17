@@ -128,6 +128,7 @@ export const compileToHtml = (
             margin: 0 auto;
             min-height: 100vh;
             background-color: ${bgColor};
+            background-attachment: ${isNotebook ? 'local, local, local' : 'scroll'};
         }
         @media (min-width: 768px) {
             .markdown-body { padding: 50px; max-width: 21cm; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }

@@ -63,13 +63,17 @@ const Preview: React.FC<PreviewProps> = ({
   }, [markdown, headerMarkdown, footerMarkdown]);
 
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: 'default',
-      securityLevel: 'loose',
-      fontFamily: fontFamily.split(',')[0].replace(/['"]/g, ''), 
-      flowchart: { useMaxWidth: true, htmlLabels: true }
-    });
+    try {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+        fontFamily: fontFamily.split(',')[0].replace(/['"]/g, ''),
+        flowchart: { useMaxWidth: true, htmlLabels: true }
+      });
+    } catch (err) {
+      console.warn('Failed to initialize Mermaid:', err);
+    }
   }, [themeId, fontFamily]);
 
   useEffect(() => {
@@ -91,7 +95,11 @@ const Preview: React.FC<PreviewProps> = ({
           div.innerHTML = svg;
           pre.replaceWith(div);
         } catch (err) {
+          console.error('Mermaid render error:', err, 'Content:', content);
           pre.classList.add('border-red-200', 'border', 'bg-red-50', 'p-2', 'rounded');
+          if (pre.parentElement === containerRef.current) {
+            pre.style.display = 'block';
+          }
         }
       }
 
@@ -202,7 +210,9 @@ const Preview: React.FC<PreviewProps> = ({
               background-size: 100% 100%, 100% 100%, 100% 1.5rem;
               background-position: 0 0, 0 0, 0 2px;
               background-repeat: no-repeat, no-repeat, repeat;
+              background-attachment: local, local, local;
               line-height: 1.5rem !important;
+              min-height: 100%;
             }
             .notebook-layout .prose article > *, .notebook-layout .prose header, .notebook-layout .prose footer {
               margin-top: 0 !important;
