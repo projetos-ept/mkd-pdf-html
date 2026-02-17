@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser, Anchor, Move } from 'lucide-react';
+import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser, Anchor, Move, BookOpen } from 'lucide-react';
 import { FontId, Template, ElementPosition } from '../types.ts';
 
 interface DocumentSettingsProps {
@@ -19,6 +19,8 @@ interface DocumentSettingsProps {
   setFooterPos: (pos: ElementPosition) => void;
   onClearHeader: () => void;
   onClearFooter: () => void;
+  showOutlinePanel?: boolean;
+  setShowOutlinePanel?: (show: boolean) => void;
 }
 
 const DocumentSettings: React.FC<DocumentSettingsProps> = ({
@@ -37,6 +39,8 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
   setFooterPos,
   onClearHeader,
   onClearFooter,
+  showOutlinePanel = true,
+  setShowOutlinePanel,
 }) => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('bioq');
@@ -133,6 +137,29 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
         </div>
 
         <div className="h-[1px] bg-gray-100 my-2"></div>
+
+        {/* Outline Panel Toggle */}
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-xs font-medium text-gray-600">
+            <BookOpen className="w-3 h-3" /> Sumário
+          </label>
+          <div className="flex bg-slate-100 p-0.5 rounded-md">
+            <button
+              onClick={() => setShowOutlinePanel?.(true)}
+              className={`px-2 py-0.5 text-[10px] rounded transition-all ${showOutlinePanel ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}
+              title="Mostrar sumário"
+            >
+              Mostrar
+            </button>
+            <button
+              onClick={() => setShowOutlinePanel?.(false)}
+              className={`px-2 py-0.5 text-[10px] rounded transition-all ${!showOutlinePanel ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-slate-400'}`}
+              title="Ocultar sumário"
+            >
+              Ocultar
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
