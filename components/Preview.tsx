@@ -5,6 +5,15 @@ import mermaid from 'mermaid';
 import { ThemeId, THEMES, FontId, ElementPosition } from '../types.ts';
 import { Eye, Clock, AlignLeft, ListTree, ChevronRight } from 'lucide-react';
 
+// Sanitize Mermaid text by removing markdown bold/italic syntax
+const sanitizeMermaidText = (text: string): string => {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')  // Remove **bold**
+    .replace(/__(.+?)__/g, '$1')      // Remove __bold__
+    .replace(/\*(.+?)\*/g, '$1')      // Remove *italic*
+    .replace(/_(.+?)_/g, '$1');       // Remove _italic_
+};
+
 interface PreviewProps {
   markdown: string;
   headerMarkdown: string;
@@ -14,6 +23,7 @@ interface PreviewProps {
   fontSize: number;
   headerPos: ElementPosition;
   footerPos: ElementPosition;
+  showOutlinePanel: boolean;
 }
 
 interface HeadingItem {
@@ -28,15 +38,16 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
-const Preview: React.FC<PreviewProps> = ({ 
-  markdown, 
-  headerMarkdown, 
-  footerMarkdown, 
-  themeId, 
-  fontFamily, 
+const Preview: React.FC<PreviewProps> = ({
+  markdown,
+  headerMarkdown,
+  footerMarkdown,
+  themeId,
+  fontFamily,
   fontSize,
   headerPos,
   footerPos,
+  showOutlinePanel,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -70,7 +81,7 @@ const Preview: React.FC<PreviewProps> = ({
       for (const block of Array.from(blocks) as HTMLElement[]) {
         const pre = block.parentElement;
         if (!pre || !isMounted) continue;
-        const content = block.textContent || '';
+        const content = sanitizeMermaidText(block.textContent || '');
         const id = `mermaid-svg-${Math.random().toString(36).substr(2, 9)}`;
         try {
           const { svg } = await mermaid.render(id, content);
@@ -84,23 +95,28 @@ const Preview: React.FC<PreviewProps> = ({
         }
       }
 
-      const headingElements = containerRef.current.querySelectorAll('h1, h2, h3');
-      const newHeadings: HeadingItem[] = [];
-      headingElements.forEach((el, index) => {
-        const id = `heading-${index}`;
-        el.id = id;
-        newHeadings.push({
-          id,
-          text: el.textContent || '',
-          level: parseInt(el.tagName.replace('H', ''))
+      // Only extract headings if outline panel is enabled
+      if (showOutlinePanel) {
+        const headingElements = containerRef.current.querySelectorAll('h1, h2, h3');
+        const newHeadings: HeadingItem[] = [];
+        headingElements.forEach((el, index) => {
+          const id = `heading-${index}`;
+          el.id = id;
+          newHeadings.push({
+            id,
+            text: el.textContent || '',
+            level: parseInt(el.tagName.replace('H', ''))
+          });
         });
-      });
-      setHeadings(newHeadings);
+        setHeadings(newHeadings);
+      } else {
+        setHeadings([]);
+      }
     };
 
     const timer = setTimeout(renderContent, 300);
     return () => { isMounted = false; clearTimeout(timer); };
-  }, [markdown, themeId, fontFamily, fontSize, headerMarkdown, footerMarkdown]); 
+  }, [markdown, themeId, fontFamily, fontSize, headerMarkdown, footerMarkdown, showOutlinePanel]); 
 
   const scrollToHeading = (id: string) => {
     const el = document.getElementById(id);
@@ -126,16 +142,18 @@ const Preview: React.FC<PreviewProps> = ({
         <div className="flex items-center gap-4 text-[10px] uppercase tracking-wider text-slate-400">
            <span className="flex items-center gap-1"><AlignLeft className="w-3 h-3" /> {stats.words} palavras</span>
            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {stats.readingTime} min</span>
-           <button 
-             onClick={() => setIsOutlineOpen(!isOutlineOpen)}
-             className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isOutlineOpen ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 text-slate-500'}`}
-           >
-             <ListTree className="w-3.5 h-3.5" /> Sumário
-           </button>
+           {showOutlinePanel && (
+             <button
+               onClick={() => setIsOutlineOpen(!isOutlineOpen)}
+               className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${isOutlineOpen ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 text-slate-500'}`}
+             >
+               <ListTree className="w-3.5 h-3.5" /> Sumário
+             </button>
+           )}
         </div>
       </div>
 
-      {isOutlineOpen && (
+      {isOutlineOpen && showOutlinePanel && (
         <div className="absolute top-[49px] right-0 bottom-0 w-64 bg-white/95 backdrop-blur-md shadow-xl border-l border-slate-200 z-30 p-4 overflow-y-auto animate-in slide-in-from-right duration-200">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Estrutura do Doc</h4>

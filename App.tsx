@@ -57,7 +57,8 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<ThemeId>(savedData?.theme ?? ThemeId.MODERN);
   const [fontFamily, setFontFamily] = useState<FontId>(savedData?.fontFamily ?? FontId.SANS);
   const [fontSize, setFontSize] = useState<number>(savedData?.fontSize ?? 16);
-  
+  const [showOutlinePanel, setShowOutlinePanel] = useState<boolean>(savedData?.showOutlinePanel ?? true);
+
   const [isCompiling, setIsCompiling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,13 +74,14 @@ const App: React.FC = () => {
         footerPos,
         theme,
         fontFamily,
-        fontSize
+        fontSize,
+        showOutlinePanel
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
       setIsSaving(false);
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [markdown, headerMarkdown, footerMarkdown, headerPos, footerPos, theme, fontFamily, fontSize]);
+  }, [markdown, headerMarkdown, footerMarkdown, headerPos, footerPos, theme, fontFamily, fontSize, showOutlinePanel]);
 
   const handleDownloadHtml = () => {
     setIsCompiling(true);
@@ -209,7 +211,7 @@ const App: React.FC = () => {
           />
           
           <div className="flex-1 pb-4">
-            <DocumentSettings 
+            <DocumentSettings
               fontFamily={fontFamily}
               setFontFamily={setFontFamily}
               fontSize={fontSize}
@@ -225,12 +227,14 @@ const App: React.FC = () => {
               setFooterPos={setFooterPos}
               onClearHeader={() => setHeaderMarkdown("")}
               onClearFooter={() => setHeaderMarkdown("")}
+              showOutlinePanel={showOutlinePanel}
+              setShowOutlinePanel={setShowOutlinePanel}
             />
           </div>
         </aside>
 
         <section className="flex-1 h-full min-w-0 preview-container overflow-hidden">
-          <Preview 
+          <Preview
             markdown={markdown}
             headerMarkdown={headerMarkdown}
             footerMarkdown={footerMarkdown}
@@ -239,6 +243,7 @@ const App: React.FC = () => {
             fontSize={fontSize}
             headerPos={headerPos}
             footerPos={footerPos}
+            showOutlinePanel={showOutlinePanel}
           />
         </section>
       </main>

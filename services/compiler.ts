@@ -8,6 +8,15 @@ const md = new MarkdownIt({
   typographer: true,
 });
 
+// Sanitize Mermaid text by removing markdown bold/italic syntax
+const sanitizeMermaidText = (text: string): string => {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')  // Remove **bold**
+    .replace(/__(.+?)__/g, '$1')      // Remove __bold__
+    .replace(/\*(.+?)\*/g, '$1')      // Remove *italic*
+    .replace(/_(.+?)_/g, '$1');       // Remove _italic_
+};
+
 export const compileToHtml = (
   markdown: string, 
   themeId: ThemeId, 
@@ -158,6 +167,16 @@ export const compileToHtml = (
             body { background: white !important; color: black !important; }
             #toc-container { display: none; }
             .markdown-body { padding: 0; max-width: none; box-shadow: none !important; }
+            ${isNotebook ? `.markdown-body {
+              background-image: linear-gradient(90deg, transparent 48px, #ffccd5 48px, #ffccd5 50px, transparent 50px),
+                                linear-gradient(90deg, transparent calc(100% - 50px), #ffccd5 calc(100% - 50px), #ffccd5 calc(100% - 48px), transparent calc(100% - 48px)),
+                                linear-gradient(#e5e7eb .1em, transparent .1em);
+              background-size: 100% 100%, 100% 100%, 100% 1.5rem;
+              background-position: 0 0, 0 0, 0 2px;
+              background-repeat: no-repeat, no-repeat, repeat;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }` : ''}
             ${headerPos === 'sticky' ? `header.doc-header { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 1cm; border-bottom: 1px solid #eee; z-index: 100; }` : ''}
             ${footerPos === 'sticky' ? `footer.doc-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 0.5cm; border-top: 1px solid #eee; z-index: 100; }` : ''}
         }
@@ -213,7 +232,7 @@ export const compileToHtml = (
                 const pre = block.parentElement;
                 const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
                 try {
-                    const { svg } = await mermaid.render(id, block.textContent);
+                    const { svg } = await mermaid.render(id, sanitizeMermaidText(block.textContent || ''));
                     const div = document.createElement('div');
                     div.className = 'mermaid-rendered flex justify-center my-8';
                     div.innerHTML = svg;
