@@ -1,7 +1,8 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Settings, Type, PanelTop, LayoutPanelTop, PanelBottom, Eraser, Anchor, Move, BookOpen } from 'lucide-react';
 import { FontId, Template, ElementPosition } from '../types.ts';
+import templatesData from '../templates.json';
 
 interface DocumentSettingsProps {
   fontFamily: FontId;
@@ -42,15 +43,8 @@ const DocumentSettings: React.FC<DocumentSettingsProps> = ({
   showOutlinePanel = true,
   setShowOutlinePanel,
 }) => {
-  const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('bioq');
-
-  useEffect(() => {
-    fetch('./templates.json')
-      .then(res => res.json())
-      .then(data => setTemplates(data))
-      .catch(err => console.error("Error loading templates", err));
-  }, []);
+  const templates: Template[] = templatesData;
 
   const handleTemplateChange = (id: string) => {
     setSelectedTemplateId(id);
