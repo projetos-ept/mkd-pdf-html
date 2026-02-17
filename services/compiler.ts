@@ -32,15 +32,14 @@ export const compileToHtml = (
     .markdown-body {
         background-color: ${bgColor};
         background-image:
-            linear-gradient(90deg, transparent 24px, #ffccd5 24px, #ffccd5 26px, transparent 26px),
-            linear-gradient(90deg, transparent calc(100% - 26px), #ffccd5 calc(100% - 26px), #ffccd5 calc(100% - 24px), transparent calc(100% - 24px)),
+            linear-gradient(90deg, transparent 48px, #ffccd5 48px, #ffccd5 50px, transparent 50px),
+            linear-gradient(90deg, transparent calc(100% - 50px), #ffccd5 calc(100% - 50px), #ffccd5 calc(100% - 48px), transparent calc(100% - 48px)),
             linear-gradient(#e5e7eb .1em, transparent .1em);
         background-size: 100% 100%, 100% 100%, 100% 1.5rem;
-        background-position: 0 0, 0 0, 0 1.42rem;
+        background-position: 0 0, 0 0, 0 2px;
         background-repeat: no-repeat, no-repeat, repeat;
         line-height: 1.5rem !important;
         position: relative;
-        padding-top: 1.5rem !important;
     }
     .markdown-body article > *, .markdown-body header, .markdown-body footer {
         margin-top: 0 !important;
@@ -116,13 +115,13 @@ export const compileToHtml = (
         }
         .markdown-body {
             max-width: 100%;
-            padding: 2rem 1.5rem;
+            padding: 2rem 50px;
             margin: 0 auto;
             min-height: 100vh;
             background-color: ${bgColor};
         }
         @media (min-width: 768px) {
-            .markdown-body { padding: 4rem; max-width: 21cm; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
+            .markdown-body { padding: 50px; max-width: 21cm; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
         }
         
         ${notebookStyles}
@@ -152,8 +151,8 @@ export const compileToHtml = (
         .markdown-body th, .markdown-body td { border: 1px solid rgba(128,128,128,0.2); padding: 0.75rem; text-align: left; }
         .markdown-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem auto; display: block; }
         
-        header.doc-header { margin-bottom: 3rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(128,128,128,0.1); }
-        footer.doc-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(128,128,128,0.1); font-size: 0.9em; opacity: 0.7; }
+        header.doc-header { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(128,128,128,0.1); }
+        footer.doc-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(128,128,128,0.1); font-size: 0.9em; opacity: 0.7; }
 
         @media print {
             body { background: white !important; color: black !important; }

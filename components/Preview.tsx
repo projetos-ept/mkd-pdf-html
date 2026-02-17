@@ -159,7 +159,7 @@ const Preview: React.FC<PreviewProps> = ({
 
       <div 
         ref={scrollContainerRef}
-        className="flex-1 overflow-auto bg-slate-200 p-4 md:p-8 print:p-0 print:bg-white print:overflow-visible relative scrollbar-thin"
+        className="flex-1 overflow-auto bg-slate-200 p-4 md:p-6 print:p-0 print:bg-white print:overflow-visible relative scrollbar-thin"
       >
         <div 
           id="printable-document"
@@ -178,14 +178,13 @@ const Preview: React.FC<PreviewProps> = ({
           <style>{`
             .notebook-layout {
               background-image:
-                linear-gradient(90deg, transparent 24px, #ffccd5 24px, #ffccd5 26px, transparent 26px),
-                linear-gradient(90deg, transparent calc(100% - 26px), #ffccd5 calc(100% - 26px), #ffccd5 calc(100% - 24px), transparent calc(100% - 24px)),
+                linear-gradient(90deg, transparent 48px, #ffccd5 48px, #ffccd5 50px, transparent 50px),
+                linear-gradient(90deg, transparent calc(100% - 50px), #ffccd5 calc(100% - 50px), #ffccd5 calc(100% - 48px), transparent calc(100% - 48px)),
                 linear-gradient(#e5e7eb .1em, transparent .1em);
               background-size: 100% 100%, 100% 100%, 100% 1.5rem;
-              background-position: 0 0, 0 0, 0 1.42rem;
+              background-position: 0 0, 0 0, 0 2px;
               background-repeat: no-repeat, no-repeat, repeat;
               line-height: 1.5rem !important;
-              padding-top: 1.5rem !important;
             }
             .notebook-layout .prose article > *, .notebook-layout .prose header, .notebook-layout .prose footer {
               margin-top: 0 !important;
@@ -235,29 +234,29 @@ const Preview: React.FC<PreviewProps> = ({
           `}</style>
 
           {renderedHeaderHtml && headerPos === 'sticky' && (
-            <header className="sticky top-0 z-20 bg-inherit border-b border-gray-200 p-8 pb-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full" 
+            <header className="sticky top-0 z-20 bg-inherit border-b border-gray-200 px-[50px] py-4 opacity-95 backdrop-blur-sm print:fixed print:top-0 print:left-0 print:right-0 print:w-full"
                     dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
           )}
 
           <div 
             ref={containerRef}
-            className={`prose prose-slate max-w-none p-8 md:p-16 prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg break-words`}
+            className={`prose prose-slate max-w-none p-[50px] prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg break-words`}
           >
             {renderedHeaderHtml && headerPos === 'flow' && (
-              <header className="mb-10 pb-4 border-b border-gray-200 print:border-gray-300 opacity-80" 
+              <header className="mb-4 pb-2 border-b border-gray-200 print:border-gray-300 opacity-80"
                       dangerouslySetInnerHTML={{ __html: renderedHeaderHtml }} />
             )}
             
             <article className="markdown-content w-full" dangerouslySetInnerHTML={{ __html: renderedContentHtml }} />
 
             {renderedFooterHtml && footerPos === 'flow' && (
-              <footer className="mt-16 pt-6 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm" 
+              <footer className="mt-8 pt-4 border-t border-gray-200 print:border-gray-300 opacity-80 text-sm"
                       dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
             )}
           </div>
 
           {renderedFooterHtml && footerPos === 'sticky' && (
-            <footer className="sticky bottom-0 z-20 bg-inherit border-t border-gray-200 p-8 pt-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm" 
+            <footer className="sticky bottom-0 z-20 bg-inherit border-t border-gray-200 px-[50px] py-4 opacity-95 backdrop-blur-sm print:fixed print:bottom-0 print:left-0 print:right-0 print:w-full text-sm"
                     dangerouslySetInnerHTML={{ __html: renderedFooterHtml }} />
           )}
         </div>
